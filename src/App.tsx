@@ -4,15 +4,16 @@ import Home from './pages/Home';
 import DraftState from './pages/DraftState';
 import ExecutionState from './pages/ExecutionState';
 import DataQueryState from './pages/DataQueryState';
+import TaskListState from './pages/TaskListState';
 
-type ViewState = 'HOME' | 'DRAFT' | 'EXECUTION' | 'DATA_QUERY';
+type ViewState = 'HOME' | 'DRAFT' | 'EXECUTION' | 'DATA_QUERY' | 'TASK_LIST';
 
 export default function App() {
-  const [view, setView] = useState<ViewState>('HOME');
+  const [view, setView] = useState<ViewState>('TASK_LIST');
 
   const getActiveNav = () => {
     if (view === 'HOME' || view === 'DRAFT' || view === 'DATA_QUERY') return 'AI 工作台';
-    if (view === 'EXECUTION') return '任务';
+    if (view === 'EXECUTION' || view === 'TASK_LIST') return '任务';
     return '首页';
   };
 
@@ -23,6 +24,7 @@ export default function App() {
         {view === 'DRAFT' && <DraftState onExecute={() => setView('EXECUTION')} />}
         {view === 'EXECUTION' && <ExecutionState />}
         {view === 'DATA_QUERY' && <DataQueryState />}
+        {view === 'TASK_LIST' && <TaskListState />}
       </AppShell>
 
       {/* Floating View Switcher for Demo Purposes */}
@@ -50,6 +52,12 @@ export default function App() {
           className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors ${view === 'DATA_QUERY' ? 'bg-white text-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-800'}`}
         >
           4. 找数问数
+        </button>
+        <button 
+          onClick={() => setView('TASK_LIST')}
+          className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors ${view === 'TASK_LIST' ? 'bg-white text-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-800'}`}
+        >
+          5. 全部任务
         </button>
       </div>
     </>
