@@ -451,7 +451,7 @@ export default function ExecutionState() {
 
 
               {/* === MOCK HISTORY 3: GraphResult + DeliverableResult === */}
-              <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden opacity-80 filter grayscale-[20%] mb-6">
+              <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden mb-6">
                 <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center text-white shadow-sm">
@@ -459,7 +459,7 @@ export default function ExecutionState() {
                     </div>
                     <span className="font-semibold text-[13px] text-gray-900">Xino</span>
                     <span className="text-gray-300 text-[10px]">●</span>
-                    <span className="text-[12px] text-gray-500">未来状态预览</span>
+                    <span className="text-[12px] text-gray-500">09:50</span>
                     <span className="text-gray-300 text-[10px]">●</span>
                     <div className="text-[11px] text-gray-500 font-medium">阶段 6: 业务对象生成</div>
                   </div>
@@ -518,14 +518,16 @@ export default function ExecutionState() {
               </div>
 
               {/* === MOCK HISTORY 4: FallbackResult + ConfigFormResult === */}
-              <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden opacity-80 filter grayscale-[20%] mb-6">
+              <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden mb-6">
                 <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div className="w-6 h-6 rounded bg-rose-600 flex items-center justify-center text-white shadow-sm">
                       <AlertTriangle size={12} />
                     </div>
                     <span className="font-semibold text-[13px] text-gray-900">Xino</span>
-                    <span className="text-[12px] text-gray-500 text-gray-300 mx-1">●</span>
+                    <span className="text-gray-300 text-[10px]">●</span>
+                    <span className="text-[12px] text-gray-500">09:55</span>
+                    <span className="text-gray-300 text-[10px]">●</span>
                     <div className="text-[11px] text-gray-500 font-medium">前置校验失败</div>
                   </div>
                 </div>
@@ -578,7 +580,7 @@ export default function ExecutionState() {
               </div>
 
               {/* === MOCK HISTORY 5: StageProgressResult === */}
-              <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden opacity-80 filter grayscale-[20%]">
+              <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden mb-6">
                 <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center text-white shadow-sm">
@@ -586,7 +588,7 @@ export default function ExecutionState() {
                     </div>
                     <span className="font-semibold text-[13px] text-gray-900">Xino</span>
                     <span className="text-gray-300 text-[10px]">●</span>
-                    <span className="text-[12px] text-gray-500">未来状态预览</span>
+                    <span className="text-[12px] text-gray-500">10:00</span>
                   </div>
                 </div>
                 <div className="px-5 py-4 border-b border-gray-100">

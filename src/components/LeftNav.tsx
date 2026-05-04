@@ -67,7 +67,13 @@ export default function LeftNav({ activeNav }: LeftNavProps) {
         <div>
           <h3 className="px-3 text-[12px] font-medium text-gray-400 mb-2">最近任务</h3>
           <div className="space-y-0.5">
-            {['供应链语义治理闭环任务', '数据质量巡检任务', '指标体系建设', '数据标准梳理任务', '元数据自动采集任务'].map((task) => (
+            {[
+              '上个月采购金额是多少？',
+              '本月采购上涨原因分析',
+              '供应商绩效分析',
+              '库存周转天数趋势',
+              '采购订单异常监控'
+            ].map((task) => (
               <button key={task} className="w-full text-left px-3 py-1.5 rounded-lg text-[13px] text-gray-600 hover:bg-gray-100 hover:text-gray-900 truncate">
                 {task}
               </button>
