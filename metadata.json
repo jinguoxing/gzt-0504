@@ -1,0 +1,6 @@
+{
+  "name": "Semovix AI 工作台",
+  "description": "基于语义治理与智能工作台的设计原型，包含首页、草稿抽屉态与任务执行态的交互演示。",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
