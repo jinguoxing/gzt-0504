@@ -7,22 +7,106 @@
     "role": "owner"
   },
   "project": {
-    "id": "p-supply-chain",
-    "name": "供应链语义治理项目",
-    "description": "供应链数据语义治理与智能执行项目"
+    "id": "proj_supply_chain",
+    "name": "供应链语义治理项目"
   },
-  "inputPlaceholder": "输入任务目标，或 @ 数据源 / 文件 / 对象 / 知识库",
-  "heroTitle": "今天想让 Xino 帮你完成什么？",
-  "heroSubtitle": "把目标告诉我，Xino 会理解你的需求，并规划可执行的任务路径。",
-  "collapsedSections": {
-    "commonTasks": 4,
-    "recentContinue": 3,
-    "commonResources": 5
+  "hero": {
+    "title": "今天想让 Xino 帮你完成什么？",
+    "subtitle": "直接描述你的问题或目标，Xino 会理解意图并选择合适的工作方式。",
+    "placeholder": "输入问题或任务目标，或 @ 指标 / 数据源 / 文件 / 知识库 ..."
   },
   "weakActions": [
     "附件",
     "@ 资源",
     "语音",
     "历史"
+  ],
+  "examples": [
+    {
+      "id": "ex1",
+      "text": "上个月采购金额是多少？",
+      "intent": "data_qa",
+      "queryType": "single_metric"
+    },
+    {
+      "id": "ex2",
+      "text": "最近 12 个月采购金额趋势",
+      "intent": "data_qa",
+      "queryType": "trend"
+    },
+    {
+      "id": "ex3",
+      "text": "按供应商拆解采购金额",
+      "intent": "data_qa",
+      "queryType": "breakdown"
+    },
+    {
+      "id": "ex4",
+      "text": "为什么本月采购金额上涨？",
+      "intent": "data_qa",
+      "queryType": "insight"
+    }
+  ],
+  "recentQuestions": [
+    {
+      "id": "dqa_001",
+      "title": "上个月采购金额是多少？",
+      "updatedAt": "09:32",
+      "status": "answer_ready"
+    },
+    {
+      "id": "dqa_002",
+      "title": "本月采购上涨原因分析",
+      "updatedAt": "09:34",
+      "status": "answer_ready"
+    },
+    {
+      "id": "dqa_003",
+      "title": "供应商绩效分析",
+      "updatedAt": "昨天",
+      "status": "saved"
+    },
+    {
+      "id": "dqa_004",
+      "title": "库存周转天数趋势",
+      "updatedAt": "昨天",
+      "status": "saved"
+    }
+  ],
+  "commonResources": [
+    {
+      "id": "metric_purchase_amount",
+      "type": "metric",
+      "name": "采购金额"
+    },
+    {
+      "id": "ds_supply_chain_prod",
+      "type": "data_source",
+      "name": "supply_chain_prod"
+    },
+    {
+      "id": "table_po_line",
+      "type": "table",
+      "name": "dwd_scm_purchase_order_line"
+    }
+  ],
+  "scenarios": [
+    {
+      "key": "semantic-governance",
+      "title": "语义治理",
+      "description": "扫描数据库 Schema，识别业务表，理解字段语义，生成业务对象与交付物。",
+      "color": "blue",
+      "draftId": "draft-supply-chain-loop",
+      "icon": "Database",
+      "buttonText": "开始治理"
+    },
+    {
+      "key": "data-query",
+      "title": "找数问数",
+      "description": "用自然语言查询业务数据，获取指标结果、趋势分析与数据依据。",
+      "color": "emerald",
+      "icon": "BarChart3",
+      "buttonText": "开始提问"
+    }
   ]
 }

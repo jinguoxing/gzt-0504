@@ -37,8 +37,11 @@ export default function AppRoutes() {
         {/* 任务完成态 */}
         <Route path="/tasks/:taskId/completed" element={<CompletedTask />} />
 
-        {/* 找数问数 */}
-        <Route path="/data-query" element={<DataQueryState />} />
+        {/* 找数问数执行页 — 合同路由 /ai-workbench/data-qa/:sessionId */}
+        <Route path="/ai-workbench/data-qa/:sessionId" element={<DataQueryState />} />
+
+        {/* 旧路由兼容跳转 */}
+        <Route path="/data-query" element={<Navigate to="/ai-workbench/data-qa/dqa_001" replace />} />
 
         {/* 兜底跳转 */}
         <Route path="*" element={<Navigate to="/workbench" replace />} />

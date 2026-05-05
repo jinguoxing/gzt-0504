@@ -94,7 +94,7 @@
   ],
   "quickStarts": [
     { "label": "语义治理", "desc": "扫描 Schema，理解字段语义，生成业务对象", "path": "/workbench", "color": "blue" },
-    { "label": "找数问数", "desc": "自然语言查询业务数据", "path": "/data-query", "color": "emerald" }
+    { "label": "找数问数", "desc": "自然语言查询业务数据", "path": "/ai-workbench/data-qa/dqa_001", "color": "emerald" }
   ],
   "typeColor": {
     "语义治理": "bg-blue-50 text-blue-700",

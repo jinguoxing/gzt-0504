@@ -1,6 +1,223 @@
 /** 视图状态类型 */
 export type ViewState = 'HOME' | 'DRAFT' | 'EXECUTION' | 'DATA_QUERY' | 'TASK_LIST';
 
+// ==================== Data QA (找数问数) Contract Types ====================
+
+export type IntentType =
+  | 'data_qa'
+  | 'governance_task'
+  | 'object_modeling'
+  | 'file_analysis'
+  | 'unknown';
+
+export type DataQaQueryType =
+  | 'single_metric'
+  | 'comparison'
+  | 'trend'
+  | 'breakdown'
+  | 'ranking'
+  | 'insight'
+  | 'metric_definition'
+  | 'data_lookup'
+  | 'detail_table';
+
+export type DataQaSessionStatus =
+  | 'answering'
+  | 'answer_ready'
+  | 'clarification_required'
+  | 'exporting'
+  | 'completed'
+  | 'failed';
+
+export type DataQaResultBlockType =
+  | 'single_metric_answer'
+  | 'metric_comparison'
+  | 'trend_chart'
+  | 'comparison_trend'
+  | 'breakdown'
+  | 'ranking'
+  | 'data_table'
+  | 'data_source_trace'
+  | 'insight_explanation'
+  | 'contribution_analysis'
+  | 'recommendation'
+  | 'clarification'
+  | 'fallback';
+
+export type DataQaResultActionType =
+  | 'followup'
+  | 'open_source'
+  | 'open_sql'
+  | 'open_detail'
+  | 'export'
+  | 'generate_report'
+  | 'create_governance_task';
+
+export interface DataQaUser {
+  id: string;
+  name: string;
+  email?: string;
+  avatarUrl?: string;
+}
+
+export interface DataQaResultAction {
+  id: string;
+  label: string;
+  actionType: DataQaResultActionType;
+  payload?: Record<string, unknown>;
+}
+
+export interface FollowupSuggestion {
+  id: string;
+  label: string;
+  question: string;
+  queryType: DataQaQueryType;
+}
+
+export interface ExportedFile {
+  id: string;
+  filename: string;
+  fileType: 'xlsx' | 'csv' | 'pdf' | 'md' | 'json' | 'txt';
+  size?: string;
+  purpose: string;
+  createdAt: string;
+  url?: string;
+}
+
+export interface DataQaResultBlock {
+  id: string;
+  type: DataQaResultBlockType;
+  title: string;
+  summary?: string;
+  data: Record<string, unknown>;
+  actions?: DataQaResultAction[];
+  defaultCollapsed?: boolean;
+}
+
+export interface DataQaMessage {
+  id: string;
+  role: 'user' | 'xino' | 'system';
+  createdAt: string;
+  displayTime: string;
+  text: string;
+  resultBlocks?: DataQaResultBlock[];
+  suggestedFollowups?: FollowupSuggestion[];
+}
+
+export interface MetricScope {
+  metricName: string;
+  timeRange: { label: string; start: string; end: string };
+  businessDomain: string;
+  calculationDefinition: string;
+  filters: string[];
+}
+
+export interface DataEvidence {
+  dataSource: string;
+  sourceTable: string;
+  sourceField: string;
+  timeField: string;
+  relatedDimensions?: string[];
+  updatedAt: string;
+  permissionStatus: 'queryable' | 'restricted' | 'unknown';
+  qualityStatus: 'passed' | 'warning' | 'failed' | 'unknown';
+  confidence: 'high' | 'medium' | 'low';
+  confidenceReasons: string[];
+}
+
+export interface QueryPlan {
+  steps: string[];
+  sql: string;
+  execution: {
+    durationMs: number;
+    scannedRows: number;
+    cacheStatus: 'hit' | 'miss';
+    indexUsed?: string;
+  };
+  defaultCollapsed: boolean;
+}
+
+export interface FollowupContext {
+  questions: string[];
+  currentAnalysisFocus?: string;
+}
+
+export interface AnswerEvidence {
+  metricScope: MetricScope;
+  dataEvidence: DataEvidence;
+  queryPlan: QueryPlan;
+  followupContext: FollowupContext;
+}
+
+export interface DataQaSession {
+  sessionId: string;
+  projectId: string;
+  projectName: string;
+  status: DataQaSessionStatus;
+  originalQuestion: string;
+  queryType: DataQaQueryType;
+  createdBy: DataQaUser;
+  createdAt: string;
+  updatedAt: string;
+  messages: DataQaMessage[];
+  evidence: AnswerEvidence;
+  exports?: ExportedFile[];
+}
+
+// ==================== Result Block Sub-types (Data QA) ====================
+
+export interface SingleMetricAnswerData {
+  metricName: string;
+  value: number;
+  formattedValue: string;
+  unit?: string;
+  period: string;
+  mom?: number;
+  yoy?: number;
+  definition: string;
+}
+
+export interface ComparisonTrendData {
+  current: { label: string; value: number; formattedValue: string };
+  previous: { label: string; value: number; formattedValue: string };
+  delta: { value: number; formattedValue: string; rate: number };
+  trend: Array<{ period: string; value: number; growthRate?: number }>;
+  keyFindings: string[];
+}
+
+export interface DataTableData {
+  columns: Array<{ key: string; label: string; type?: string }>;
+  rows: Array<Record<string, unknown>>;
+  total: number;
+  filters: string[];
+  previewLimit: number;
+}
+
+export interface InsightExplanationData {
+  conclusion: string;
+  reasons: string[];
+}
+
+export interface ContributionAnalysisData {
+  items: Array<{
+    label: string;
+    formattedValue: string;
+    percent: number;
+  }>;
+}
+
+export interface RecommendationData {
+  items: string[];
+}
+
+export interface DataSourceTraceData {
+  dataSource: string;
+  sourceTable: string;
+  sourceField: string;
+  updatedAt: string;
+  confidence: 'high' | 'medium' | 'low';
+}
+
 /** 导航项 */
 export interface NavItem {
   label: string;

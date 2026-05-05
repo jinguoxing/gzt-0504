@@ -3,12 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Paperclip, AtSign, Mic, History, Send, ChevronRight, Database, BarChart3,
   Sparkles, User, X, FileText, ChevronDown, Check, Clock, Settings2, RotateCw, Loader2,
-  Plus, Trash2, Save,
+  Plus, Trash2, Save, MessageCircle,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import mockData from '@/mock/workbench-home.json';
 import draftMockData from '@/mock/task-draft.json';
 import { formatTime } from '@/mock/helpers';
+import { dataQaPath } from '@/config/routeConfig';
 
 /** Editable section keys for inline editing */
 type EditableSection = 'understanding' | 'dataSource' | 'scanScope' | 'resources' | 'deliverables';
@@ -87,26 +88,16 @@ function matchChange(input: string) {
   };
 }
 
-const SCENARIOS = [
-  {
-    key: 'semantic-governance',
-    title: '语义治理',
-    description: '扫描数据库 Schema，识别业务表，理解字段语义，生成业务对象与交付物。',
-    color: 'blue' as const,
-    draftId: 'draft-supply-chain-loop',
-    icon: Database,
-    buttonText: '开始治理',
-  },
-  {
-    key: 'data-query',
-    title: '找数问数',
-    description: '用自然语言查询业务数据，获取指标结果、趋势分析与数据依据。',
-    color: 'emerald' as const,
-    path: '/data-query',
-    icon: BarChart3,
-    buttonText: '开始提问',
-  },
-];
+const SCENARIO_ICON_MAP: Record<string, React.ElementType> = {
+  Database,
+  BarChart3,
+};
+
+const SCENARIOS = (mockData as any).scenarios.map((s: any) => ({
+  ...s,
+  icon: SCENARIO_ICON_MAP[s.icon] || Database,
+  path: s.key === 'data-query' ? dataQaPath('dqa_001') : undefined,
+}));
 
 const WEAK_ACTION_ICONS: Record<string, React.ElementType> = {
   '附件': Paperclip,
@@ -139,6 +130,9 @@ export default function Home() {
   // Inline editing state
   const [editingKey, setEditingKey] = useState<EditableSection | null>(null);
   const [saveToast, setSaveToast] = useState(false);
+
+  // Intent detection state
+  const [isDetecting, setIsDetecting] = useState(false);
 
   // Mutable draft state — initialized from mock, updated by inline edits
   const [draftState, setDraftState] = useState({
@@ -207,8 +201,31 @@ export default function Home() {
     setSearchParams({ draftId: 'draft-supply-chain-loop' });
   };
 
+  /** Simple keyword-based intent detection (mock) */
+  const detectIntent = (text: string): 'data_qa' | 'governance_task' | 'unknown' => {
+    const qaKeywords = ['多少', '趋势', '排名', '同比', '环比', '拆解', '为什么', '上涨', '下降', '怎么算', '在哪里', '最高', '最低', '前 10', '前10'];
+    if (qaKeywords.some(k => text.includes(k))) return 'data_qa';
+    const govKeywords = ['治理', '扫描', '建模', '语义', 'Schema', '字段'];
+    if (govKeywords.some(k => text.includes(k))) return 'governance_task';
+    // Default: treat as data_qa for most natural language questions
+    return 'data_qa';
+  };
+
   const handleSend = () => {
     if (workbenchState === 'empty') {
+      const text = inputValue.trim();
+      if (!text) return;
+
+      const intent = detectIntent(text);
+      if (intent === 'data_qa') {
+        // Intent detection flow: loading → navigate to data-qa page
+        setIsDetecting(true);
+        setTimeout(() => {
+          navigate(dataQaPath('dqa_001'));
+        }, 1200);
+        return;
+      }
+      // Governance or unknown → open draft drawer
       handleGenerateDraft();
       return;
     }
@@ -288,7 +305,7 @@ export default function Home() {
     }, 800 + Math.random() * 600);
   };
 
-  const handleScenarioClick = (scenario: typeof SCENARIOS[number]) => {
+  const handleScenarioClick = (scenario: any) => {
     if (scenario.path) {
       navigate(scenario.path);
     } else if (scenario.draftId) {
@@ -369,16 +386,37 @@ export default function Home() {
   // Empty State (首页空白态)
   // ========================
   if (workbenchState === 'empty') {
+    const hero = (mockData as any).hero;
+    const examples = (mockData as any).examples || [];
+    const recentQuestions = (mockData as any).recentQuestions || [];
+    const commonResources = (mockData as any).commonResources || [];
+
     return (
-      <div className="flex-1 flex flex-col items-center justify-center h-full px-6 bg-[#F8FAFC]">
+      <div className="flex-1 flex flex-col items-center justify-center h-full px-6 bg-[#F8FAFC] relative">
+        {/* Intent Detection Overlay */}
+        {isDetecting && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center animate-pulse">
+                <Sparkles size={24} className="text-white" />
+              </div>
+              <div className="text-center">
+                <p className="text-[16px] font-semibold text-gray-900 mb-1">Xino 正在理解你的问题</p>
+                <p className="text-[14px] text-gray-500">识别意图并准备回答...</p>
+              </div>
+              <Loader2 size={20} className="text-blue-600 animate-spin" />
+            </div>
+          </div>
+        )}
+
         <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
           {/* Hero Section */}
           <div className="text-center mb-10">
             <h2 className="text-[32px] font-bold text-gray-900 mb-3 tracking-tight">
-              {mockData.heroTitle}
+              {hero.title}
             </h2>
             <p className="text-[16px] text-gray-500 font-medium">
-              {mockData.heroSubtitle}
+              {hero.subtitle}
             </p>
           </div>
 
@@ -387,8 +425,15 @@ export default function Home() {
             <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-200 p-4 transition-shadow focus-within:shadow-[0_8px_30px_rgb(37,99,235,0.08)] focus-within:border-blue-300">
               <textarea
                 className="w-full min-h-[120px] resize-none outline-none text-[16px] leading-relaxed placeholder:text-gray-400 bg-transparent text-gray-900"
-                placeholder={mockData.inputPlaceholder}
-                defaultValue="请对供应链数据库进行语义治理，扫描 Schema、识别业务相关表、理解字段语义、生成业务对象与交付物。"
+                placeholder={hero.placeholder}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
               ></textarea>
 
               <div className="flex items-center justify-between mt-4">
@@ -404,23 +449,52 @@ export default function Home() {
                 </div>
                 <button
                   onClick={handleSend}
-                  className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-[14px] transition-colors shadow-sm"
+                  disabled={isDetecting || !inputValue.trim()}
+                  className={cn(
+                    "flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-[14px] transition-colors shadow-sm",
+                    isDetecting || !inputValue.trim()
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700 text-white"
+                  )}
                 >
-                  生成任务草稿
-                  <Send size={16} />
+                  {isDetecting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      识别中...
+                    </>
+                  ) : (
+                    <>
+                      发送
+                      <Send size={16} />
+                    </>
+                  )}
                 </button>
               </div>
             </div>
-
-            <div className="mt-4 text-center">
-              <p className="text-[13px] text-gray-400">
-                可通过 @ 引用数据源、文件、对象或知识库，Xino 会自动整理为任务草稿。
-              </p>
-            </div>
           </div>
 
+          {/* Example Questions */}
+          {examples.length > 0 && (
+            <div className="w-full max-w-3xl mt-2">
+              <div className="flex flex-wrap gap-2 justify-center">
+                {examples.map((ex: any) => (
+                  <button
+                    key={ex.id}
+                    onClick={() => {
+                      setInputValue(ex.text);
+                    }}
+                    className="px-4 py-2 rounded-xl text-[13px] text-gray-600 bg-white border border-gray-200 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50 transition-all shadow-sm"
+                  >
+                    <MessageCircle size={13} className="inline mr-1.5 -mt-0.5 text-gray-400" />
+                    {ex.text}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Scenario Cards */}
-          <div className="w-full max-w-3xl mt-6">
+          <div className="w-full max-w-3xl mt-8">
             <div className="flex items-center gap-4 mb-5">
               <div className="flex-1 h-px bg-gray-200"></div>
               <span className="text-[13px] text-gray-400 font-medium">或者选择一个场景</span>
@@ -428,7 +502,7 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-2 gap-5">
-              {SCENARIOS.map((scenario) => {
+              {SCENARIOS.map((scenario: any) => {
                 const Icon = scenario.icon;
                 const colorClasses = scenario.color === 'blue'
                   ? {
@@ -467,25 +541,47 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Collapsed Sections */}
-          <div className="w-full max-w-3xl mt-10 flex items-center justify-center gap-8">
-            {[
-              { label: '常用任务', count: mockData.collapsedSections.commonTasks },
-              { label: '最近继续', count: mockData.collapsedSections.recentContinue },
-              { label: '常用资源', count: mockData.collapsedSections.commonResources }
-            ].map((item) => (
-              <button key={item.label} className="flex items-center gap-2 text-[14px] text-gray-500 hover:text-gray-900 transition-colors group">
-                <span className="font-medium">{item.label} <span className="text-gray-400 font-normal">{item.count} 个</span></span>
-                <ChevronRight size={16} className="text-gray-400 group-hover:translate-x-0.5 transition-transform" />
-              </button>
-            ))}
+          {/* Recent Questions + Common Resources */}
+          <div className="w-full max-w-3xl mt-8 flex items-start gap-8">
+            {/* Recent Questions */}
+            {recentQuestions.length > 0 && (
+              <div className="flex-1">
+                <h4 className="text-[13px] font-medium text-gray-400 mb-3">最近问数</h4>
+                <div className="space-y-1">
+                  {recentQuestions.slice(0, 4).map((q: any) => (
+                    <button
+                      key={q.id}
+                      onClick={() => navigate(dataQaPath(q.id))}
+                      className="w-full text-left px-3 py-2 rounded-lg text-[13px] text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center justify-between group"
+                    >
+                      <span className="truncate flex-1">{q.title}</span>
+                      <span className="text-[11px] text-gray-400 ml-2 shrink-0">{q.updatedAt}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Common Resources */}
+            {commonResources.length > 0 && (
+              <div className="flex-1">
+                <h4 className="text-[13px] font-medium text-gray-400 mb-3">常用资源</h4>
+                <div className="flex flex-wrap gap-2">
+                  {commonResources.map((r: any) => (
+                    <span key={r.id} className="px-3 py-1.5 rounded-lg text-[12px] bg-white border border-gray-200 text-gray-600">
+                      {r.type === 'metric' && '📊 '}{r.type === 'data_source' && '🗄️ '}{r.type === 'table' && '📋 '}{r.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Bottom Hint */}
         <div className="absolute bottom-6 text-center w-full">
           <p className="text-[12px] text-gray-400">
-            Xino 会根据你的目标，自动识别任务类型、推荐数据源、规划执行步骤。
+            Xino 会根据你的问题，自动识别意图并选择合适的工作方式。
           </p>
         </div>
       </div>

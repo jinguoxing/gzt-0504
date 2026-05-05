@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus, Building2, User } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { NAV_ITEMS } from '@/config/menuConfig';
+import { dataQaPath } from '@/config/routeConfig';
 
 export default function LeftNav() {
   const navigate = useNavigate();
@@ -84,7 +85,7 @@ export default function LeftNav() {
             ].map((task) => (
               <button
                 key={task}
-                onClick={() => navigate('/data-query')}
+                onClick={() => navigate(dataQaPath('dqa_001'))}
                 className="w-full text-left px-3 py-1.5 rounded-lg text-[13px] text-gray-600 hover:bg-gray-100 hover:text-gray-900 truncate"
               >
                 {task}
