@@ -4,33 +4,36 @@ import {
   FileText, CheckCircle2, Clock, ArrowLeft, Filter, Sparkles
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import mockData from '@/mock/field-review.json';
+import { confidencePercent, priorityLabel, priorityColor, statusLabel } from '@/mock/helpers';
 
 const TABS = [
-  { key: 'all', label: '全部', count: 532 },
-  { key: 'pending', label: '待确认', count: 326 },
-  { key: 'conflict', label: '冲突', count: 41 },
-  { key: 'abnormal', label: '异常', count: 37 },
-  { key: 'processed', label: '已处理', count: 128 },
+  { key: 'all', label: '全部', count: mockData.overview.pendingFields + mockData.overview.conflictFields + mockData.overview.abnormalFields + mockData.overview.processedFields },
+  { key: 'pending', label: '待确认', count: mockData.overview.pendingFields },
+  { key: 'conflict', label: '冲突', count: mockData.overview.conflictFields },
+  { key: 'abnormal', label: '异常', count: mockData.overview.abnormalFields },
+  { key: 'processed', label: '已处理', count: mockData.overview.processedFields },
 ];
 
-const FIELDS = [
-  { id: 'field-po-status', fieldName: 'po_status', tableName: 'po_status', semanticA: '采购订单状态', semanticB: '采购订单处理状态', confidence: 62, risk: 'MEDIUM', action: 'CONFIRM_A', status: 'PENDING' },
-  { id: 'field-supplier-code', fieldName: 'supplier_code', tableName: 'supplier_info', semanticA: '供应商编码', semanticB: '供应商内部编码', confidence: 88, risk: 'LOW', action: 'CONFIRM_A', status: 'PENDING' },
-  { id: 'field-wh-id', fieldName: 'wh_id', tableName: 'warehouse', semanticA: '仓库标识', semanticB: '仓库ID', confidence: 80, risk: 'LOW', action: 'CONFIRM_B', status: 'PENDING' },
-  { id: 'field-line-type', fieldName: 'line_type', tableName: 'po_line', semanticA: '订单行类型', semanticB: '行项目类型', confidence: 45, risk: 'MEDIUM', action: 'MANUAL_EDIT', status: 'PENDING' },
-  { id: 'field-buyer-name', fieldName: 'buyer_name', tableName: 'buyer', semanticA: '采购员姓名', semanticB: '采购负责人姓名', confidence: 55, risk: 'MEDIUM', action: 'MANUAL_EDIT', status: 'PENDING' },
-];
+const FIELDS = mockData.fields.map(field => ({
+  id: field.id,
+  fieldName: field.fieldName,
+  tableName: field.tableName,
+  semanticA: field.semanticA,
+  semanticB: field.semanticB,
+  confidence: confidencePercent(field.confidence),
+  risk: field.riskLevel,
+  action: field.recommendedAction,
+  status: field.status,
+  samples: field.samples,
+  evidence: field.evidence,
+  similarFields: field.similarFields,
+}));
 
-const STAGES = [
-  { name: '选择与采集', status: 'COMPLETED' },
-  { name: 'Schema 扫描', status: 'COMPLETED' },
-  { name: '业务表识别', status: 'COMPLETED' },
-  { name: '字段候选生成', status: 'COMPLETED' },
-  { name: '字段语义理解', status: 'RUNNING' },
-  { name: '业务对象生成', status: 'PENDING' },
-  { name: '血缘与影响分析', status: 'PENDING' },
-  { name: '质量校验与校准', status: 'PENDING' },
-];
+const STAGES = mockData.sidePanel.plan.map(stage => ({
+  name: stage.name,
+  status: stage.status,
+}));
 
 const riskColor: Record<string, string> = {
   HIGH: 'text-red-600 bg-red-50',
@@ -55,16 +58,16 @@ export default function ReviewDetail() {
         <div className="px-8 py-5 bg-white border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center gap-2 text-[13px] text-gray-400 mb-2">
             <span>任务</span><ChevronRight size={14} />
-            <span className="text-gray-600">字段确认与冲突处理</span>
+            <span className="text-gray-600">{mockData.task.currentStage.name}</span>
           </div>
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-[20px] font-bold text-gray-900">供应链语义治理闭环任务</h1>
-                <span className="bg-blue-50 text-blue-700 text-[12px] font-medium px-2.5 py-1 rounded-full">执行中</span>
+                <h1 className="text-[20px] font-bold text-gray-900">{mockData.task.name}</h1>
+                <span className={cn('text-[12px] font-medium px-2.5 py-1 rounded-full', priorityColor(mockData.task.status))}>{statusLabel(mockData.task.status)}</span>
               </div>
               <p className="text-[13px] text-gray-500 mt-1">
-                字段确认与冲突处理 5/8 · 整体进度 63%
+                {mockData.task.currentStage.name} {mockData.task.currentStage.index}/{mockData.task.stages.length} · 整体进度 {mockData.task.progress}%
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -89,10 +92,10 @@ export default function ReviewDetail() {
         <div className="px-8 py-4 bg-white border-b border-gray-100">
           <div className="grid grid-cols-4 gap-4">
             {[
-              { label: '待确认字段', value: 326, color: 'text-orange-600' },
-              { label: '冲突字段', value: 41, color: 'text-red-600' },
-              { label: '异常字段', value: 37, color: 'text-orange-600' },
-              { label: '已处理', value: 128, color: 'text-green-600' },
+              { label: '待确认字段', value: mockData.overview.pendingFields, color: 'text-orange-600' },
+              { label: '冲突字段', value: mockData.overview.conflictFields, color: 'text-red-600' },
+              { label: '异常字段', value: mockData.overview.abnormalFields, color: 'text-orange-600' },
+              { label: '已处理', value: mockData.overview.processedFields, color: 'text-green-600' },
             ].map(item => (
               <div key={item.label} className="flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-3">
                 <span className={cn('text-[20px] font-bold', item.color)}>{item.value}</span>
@@ -162,7 +165,7 @@ export default function ReviewDetail() {
                   <td className="py-3 text-[13px] text-right font-medium text-gray-700">{field.confidence}%</td>
                   <td className="py-3 text-center">
                     <span className={cn('text-[12px] font-medium px-2 py-0.5 rounded', riskColor[field.risk])}>
-                      {field.risk === 'HIGH' ? '高' : field.risk === 'MEDIUM' ? '中' : '低'}
+                      {priorityLabel(field.risk)}
                     </span>
                   </td>
                   <td className="py-3 text-center">
@@ -188,7 +191,7 @@ export default function ReviewDetail() {
             </div>
             <div className="flex-1">
               <p className="text-[13px] text-blue-800">
-                当前有 41 个冲突字段，建议优先处理风险级别为<b>高/中</b>且置信度差异较大的字段。
+                当前有 {mockData.overview.conflictFields} 个冲突字段，建议优先处理风险级别为<b>高/中</b>且置信度差异较大的字段。
               </p>
               <div className="flex items-center gap-2 mt-2">
                 <button className="text-[12px] font-medium text-blue-600 bg-white px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors">推荐排序</button>
@@ -214,17 +217,17 @@ export default function ReviewDetail() {
             <div className="space-y-4 text-[13px]">
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-gray-50 rounded-lg px-3 py-2"><span className="text-gray-400">所在表</span><br /><span className="text-gray-700 font-medium">{selectedField.tableName}</span></div>
-                <div className="bg-gray-50 rounded-lg px-3 py-2"><span className="text-gray-400">状态</span><br /><span className="text-gray-700 font-medium">待确认</span></div>
+                <div className="bg-gray-50 rounded-lg px-3 py-2"><span className="text-gray-400">状态</span><br /><span className="text-gray-700 font-medium">{statusLabel(selectedField.status)}</span></div>
                 <div className="bg-gray-50 rounded-lg px-3 py-2"><span className="text-gray-400">置信度</span><br /><span className="text-gray-700 font-medium">{selectedField.confidence}%</span></div>
-                <div className="bg-gray-50 rounded-lg px-3 py-2"><span className="text-gray-400">风险级别</span><br /><span className={cn('font-medium', riskColor[selectedField.risk])}>{selectedField.risk === 'HIGH' ? '高' : selectedField.risk === 'MEDIUM' ? '中' : '低'}</span></div>
+                <div className="bg-gray-50 rounded-lg px-3 py-2"><span className="text-gray-400">风险级别</span><br /><span className={cn('font-medium', riskColor[selectedField.risk])}>{priorityLabel(selectedField.risk)}</span></div>
               </div>
 
               {/* Sample Values */}
-              {selectedField.id === 'field-po-status' && (
+              {selectedField.samples && selectedField.samples.length > 0 && (
                 <div>
                   <h4 className="text-[12px] text-gray-400 font-medium mb-2">字段样例值</h4>
                   <div className="flex flex-wrap gap-1.5">
-                    {['NEW', 'APPROVED', 'REJECTED', 'CANCELLED', 'CLOSED', 'ON_HOLD'].map(v => (
+                    {selectedField.samples.map((v: string) => (
                       <span key={v} className="bg-gray-100 text-gray-600 text-[12px] px-2 py-1 rounded font-mono">{v}</span>
                     ))}
                   </div>
@@ -232,30 +235,28 @@ export default function ReviewDetail() {
               )}
 
               {/* Evidence */}
-              {selectedField.id === 'field-po-status' && (
+              {selectedField.evidence && selectedField.evidence.length > 0 && (
                 <div>
                   <h4 className="text-[12px] text-gray-400 font-medium mb-2">推断依据</h4>
                   <div className="space-y-1.5">
-                    <p className="text-gray-600">来源：采购订单状态码字典</p>
-                    <p className="text-gray-600">匹配度：78%</p>
-                    <p className="text-gray-600">在采购流程中表示订单当前状态</p>
+                    {selectedField.evidence.map((line: string, idx: number) => (
+                      <p key={idx} className="text-gray-600">{line}</p>
+                    ))}
                   </div>
                 </div>
               )}
 
               {/* Similar Fields */}
-              {selectedField.id === 'field-po-status' && (
+              {selectedField.similarFields && selectedField.similarFields.length > 0 && (
                 <div>
                   <h4 className="text-[12px] text-gray-400 font-medium mb-2">相似字段</h4>
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-                      <span className="text-gray-700 font-medium">order_status (订单状态)</span>
-                      <span className="text-blue-600 font-medium text-[12px]">89%</span>
-                    </div>
-                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-                      <span className="text-gray-700 font-medium">po_order_status (采购订单状态)</span>
-                      <span className="text-blue-600 font-medium text-[12px]">82%</span>
-                    </div>
+                    {selectedField.similarFields.map((sf: { fieldName: string; semantic: string; confidence: number }, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <span className="text-gray-700 font-medium">{sf.fieldName} ({sf.semantic})</span>
+                        <span className="text-blue-600 font-medium text-[12px]">{confidencePercent(sf.confidence)}%</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

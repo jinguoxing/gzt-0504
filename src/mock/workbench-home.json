@@ -1,0 +1,28 @@
+{
+  "currentUser": {
+    "id": "u-litong",
+    "name": "李桐",
+    "email": "liming@semovix.com",
+    "avatarUrl": "/avatars/litong.png",
+    "role": "owner"
+  },
+  "project": {
+    "id": "p-supply-chain",
+    "name": "供应链语义治理项目",
+    "description": "供应链数据语义治理与智能执行项目"
+  },
+  "inputPlaceholder": "输入任务目标，或 @ 数据源 / 文件 / 对象 / 知识库",
+  "heroTitle": "今天想让 Xino 帮你完成什么？",
+  "heroSubtitle": "把目标告诉我，Xino 会理解你的需求，并规划可执行的任务路径。",
+  "collapsedSections": {
+    "commonTasks": 4,
+    "recentContinue": 3,
+    "commonResources": 5
+  },
+  "weakActions": [
+    "附件",
+    "@ 资源",
+    "语音",
+    "历史"
+  ]
+}

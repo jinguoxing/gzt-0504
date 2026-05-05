@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, User, ChevronRight, ChevronDown, Download, Send, AlertCircle, Maximize2, Table, PanelRight, TrendingUp, TrendingDown, Database, Copy, RefreshCw, Share2, HelpCircle, FileText, Code, Clock, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import mockData from '@/mock/data-query.json';
 import {
   LineChart,
   Line,
@@ -14,26 +15,13 @@ import {
   Cell
 } from 'recharts';
 
-const trendData = [
-  { month: '25/05', value: 8500000 },
-  { month: '25/06', value: 9200000 },
-  { month: '25/07', value: 8800000 },
-  { month: '25/08', value: 9500000 },
-  { month: '25/09', value: 10200000 },
-  { month: '25/10', value: 9800000 },
-  { month: '25/11', value: 11000000 },
-  { month: '25/12', value: 11500000 },
-  { month: '26/01', value: 10800000 },
-  { month: '26/02', value: 9900000 },
-  { month: '26/03', value: 11412640 },
-  { month: '26/04', value: 12486320 },
-];
-
-const contributionData = [
-  { reason: '原材料采购增加', value: 820000, percentage: 76, color: '#3B82F6' },
-  { reason: '新增大额订单', value: 160000, percentage: 15, color: '#60A5FA' },
-  { reason: '单价上涨', value: 93680, percentage: 9, color: '#93C5FD' },
-];
+const round1 = mockData.rounds[0];
+const round2 = mockData.rounds[1];
+const r1Resp = round1.xinoResponse;
+const r2Resp = round2.xinoResponse;
+const trendData = r1Resp.trend.data;
+const contributionData = r2Resp.attribution.contributionData;
+const sidebarCtx = mockData.sidebarContext;
 
 export default function DataQueryState() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -83,11 +71,11 @@ export default function DataQueryState() {
             {/* User Query */}
             <div className="flex flex-col items-end gap-1.5">
               <div className="flex items-center gap-2 text-[12px] text-gray-400">
-                <span className="font-semibold text-gray-900">李桐</span>
-                <span>09:32</span>
+                <span className="font-semibold text-gray-900">{mockData.user.name}</span>
+                <span>{round1.userQuery.createdAt}</span>
               </div>
               <div className="text-[14px] text-gray-900 bg-white border border-gray-200 px-4 py-3 rounded-xl shadow-sm max-w-xl leading-relaxed">
-                上个月采购金额是多少？
+                {round1.userQuery.content}
               </div>
             </div>
 
@@ -98,13 +86,13 @@ export default function DataQueryState() {
                   <Sparkles size={11} />
                 </div>
                 <span className="font-semibold text-gray-900">Xino</span>
-                <span>09:32</span>
+                <span>{r1Resp.createdAt}</span>
               </div>
               
               {/* Text Description */}
               <div className="text-[14px] text-gray-800 leading-relaxed max-w-2xl px-1">
-                <p className="mb-2">上个月采购金额为 ¥12,486,320，环比增长 8.6%，同比增长 12.3%。</p>
-                <p className="text-gray-600">本次使用“已审核采购订单含税金额”口径，统计周期为 2026-04-01 至 2026-04-30。下面展示核心结果、趋势和数据依据。</p>
+                <p className="mb-2">{r1Resp.summary}</p>
+                <p className="text-gray-600">{r1Resp.detail}</p>
               </div>
 
               {/* Core Cards Grid */}
@@ -113,29 +101,29 @@ export default function DataQueryState() {
                 {/* Card 1: Core Answer */}
                 <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col justify-between h-full">
                   <div>
-                    <h3 className="text-[14px] font-medium text-gray-600 mb-3">上个月采购金额</h3>
+                    <h3 className="text-[14px] font-medium text-gray-600 mb-3">{r1Resp.coreMetric.label}</h3>
                     <div className="flex items-baseline gap-3 mb-4">
-                      <span className="text-[36px] font-bold text-gray-900 tracking-tight leading-none">¥12,486,320</span>
+                      <span className="text-[36px] font-bold text-gray-900 tracking-tight leading-none">{r1Resp.coreMetric.valueFormatted}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[12px] font-semibold bg-green-50 text-green-700 border border-green-100">
                         <TrendingUp size={14} />
-                        环比 +8.6%
+                        {r1Resp.coreMetric.momChange.label}
                       </span>
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[12px] font-semibold bg-green-50 text-green-700 border border-green-100">
                         <TrendingUp size={14} />
-                        同比 +12.3%
+                        {r1Resp.coreMetric.yoyChange.label}
                       </span>
                     </div>
                   </div>
                   <div className="mt-8 pt-4 border-t border-gray-100 space-y-2">
                     <div className="flex items-center justify-between text-[12px]">
                       <span className="text-gray-500">统计周期</span>
-                      <span className="text-gray-900 font-medium font-mono">2026-04-01 至 2026-04-30</span>
+                      <span className="text-gray-900 font-medium font-mono">{r1Resp.coreMetric.period}</span>
                     </div>
                     <div className="flex items-center justify-between text-[12px]">
                       <span className="text-gray-500">口径</span>
-                      <span className="text-gray-900 font-medium">已审核采购订单含税金额</span>
+                      <span className="text-gray-900 font-medium">{r1Resp.coreMetric.calibre}</span>
                     </div>
                   </div>
                 </div>
@@ -147,17 +135,17 @@ export default function DataQueryState() {
                     {/* Left stats */}
                     <div className="flex flex-col justify-center space-y-3 shrink-0">
                       <div>
-                        <div className="text-[11px] text-gray-500 mb-0.5">本月 (04月)</div>
-                        <div className="text-[14px] font-semibold text-gray-900">¥ 12,486,320</div>
+                        <div className="text-[11px] text-gray-500 mb-0.5">{r1Resp.trend.currentMonth.label}</div>
+                        <div className="text-[14px] font-semibold text-gray-900">{r1Resp.trend.currentMonth.valueFormatted}</div>
                       </div>
                       <div>
-                        <div className="text-[11px] text-gray-500 mb-0.5">上月 (03月)</div>
-                        <div className="text-[14px] font-semibold text-gray-900">¥ 11,412,640</div>
+                        <div className="text-[11px] text-gray-500 mb-0.5">{r1Resp.trend.previousMonth.label}</div>
+                        <div className="text-[14px] font-semibold text-gray-900">{r1Resp.trend.previousMonth.valueFormatted}</div>
                       </div>
                       <div className="h-px w-full bg-gray-100 my-1"></div>
                       <div className="flex items-center gap-2">
                          <span className="text-[11px] text-gray-500">变化</span>
-                         <span className="text-[13px] font-bold text-green-600">+¥ 1,073,680</span>
+                         <span className="text-[13px] font-bold text-green-600">{r1Resp.trend.change.valueFormatted}</span>
                       </div>
                     </div>
                     {/* Right Chart */}
@@ -182,7 +170,7 @@ export default function DataQueryState() {
                   </div>
                   <div className="mt-4 pt-3 border-t border-gray-100 flex items-start gap-2">
                     <Sparkles size={14} className="text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-[12px] text-gray-700">4 月采购金额最高，近 3 个月持续上升</span>
+                    <span className="text-[12px] text-gray-700">{r1Resp.trend.insight}</span>
                   </div>
                 </div>
 
@@ -196,19 +184,19 @@ export default function DataQueryState() {
                     <div className="space-y-2">
                       <div className="flex justify-between items-center text-[13px]">
                         <span className="text-gray-500">表</span>
-                        <span className="font-mono text-gray-800 bg-gray-50 px-1.5 py-0.5 rounded">dwd_scm_purchase_order_line</span>
+                        <span className="font-mono text-gray-800 bg-gray-50 px-1.5 py-0.5 rounded">{r1Resp.dataBasis.table}</span>
                       </div>
                       <div className="flex justify-between items-center text-[13px]">
                         <span className="text-gray-500">字段</span>
-                        <span className="font-mono text-gray-800">amount_tax_included</span>
+                        <span className="font-mono text-gray-800">{r1Resp.dataBasis.field}</span>
                       </div>
                       <div className="flex justify-between items-center text-[13px]">
                         <span className="text-gray-500">更新时间</span>
-                        <span className="text-gray-800 font-mono">2026-05-04 09:30</span>
+                        <span className="text-gray-800 font-mono">{r1Resp.dataBasis.updatedTime}</span>
                       </div>
                       <div className="flex justify-between items-center text-[13px]">
                         <span className="text-gray-500">可信度</span>
-                        <span className="text-green-600 font-medium">高</span>
+                        <span className="text-green-600 font-medium">{r1Resp.dataBasis.confidence}</span>
                       </div>
                     </div>
                   </div>
@@ -229,22 +217,17 @@ export default function DataQueryState() {
                     你还可以继续问
                   </h3>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    <button className="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-[13px] font-medium transition-colors">
-                      为什么上涨？
-                    </button>
-                    <button className="px-3 py-1.5 bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 rounded-lg text-[13px] transition-colors">
-                      按供应商拆解
-                    </button>
-                    <button className="px-3 py-1.5 bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 rounded-lg text-[13px] transition-colors">
-                      看最近 30 天趋势
-                    </button>
-                    <button className="px-3 py-1.5 bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 rounded-lg text-[13px] transition-colors">
-                      看前 10 大供应商
-                    </button>
-                    <button className="px-3 py-1.5 bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 rounded-lg text-[13px] transition-colors flex items-center gap-1">
-                      <Download size={12} />
-                      导出采购明细
-                    </button>
+                    {r1Resp.suggestions.map((suggestion, i) => (
+                      <button key={suggestion} className={cn(
+                        "px-3 py-1.5 rounded-lg text-[13px] transition-colors",
+                        i === 0
+                          ? "bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium"
+                          : "bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200"
+                      )}>
+                        {suggestion === '导出采购明细' && <Download size={12} className="inline mr-1" />}
+                        {suggestion}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -255,11 +238,11 @@ export default function DataQueryState() {
             {/* User Query */}
             <div className="flex flex-col items-end gap-1.5 pt-4">
               <div className="flex items-center gap-2 text-[12px] text-gray-400">
-                <span className="font-semibold text-gray-900">李桐</span>
-                <span>09:34</span>
+                <span className="font-semibold text-gray-900">{mockData.user.name}</span>
+                <span>{round2.userQuery.createdAt}</span>
               </div>
               <div className="text-[14px] text-gray-900 bg-white border border-gray-200 px-4 py-3 rounded-xl shadow-sm max-w-xl leading-relaxed">
-                为什么本月采购金额上涨？
+                {round2.userQuery.content}
               </div>
             </div>
 
@@ -270,12 +253,12 @@ export default function DataQueryState() {
                   <Sparkles size={11} />
                 </div>
                 <span className="font-semibold text-gray-900">Xino</span>
-                <span>09:34</span>
+                <span>{r2Resp.createdAt}</span>
               </div>
-              
+
               {/* Text Description */}
               <div className="text-[14px] text-gray-800 leading-relaxed max-w-2xl px-1">
-                我从品类、供应商和大额订单三个角度做了归因分析。本月采购金额环比上涨 8.6%，主要由原材料采购增加驱动。
+                {r2Resp.summary}
               </div>
 
               {/* Cards Grid Round 2 */}
@@ -285,21 +268,17 @@ export default function DataQueryState() {
                 <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm col-span-1">
                   <h3 className="text-[15px] font-semibold text-gray-900 mb-2">上涨原因归因结论</h3>
                   <p className="text-[13px] text-gray-600 mb-4 bg-blue-50/50 p-2.5 rounded-lg border border-blue-100">
-                    本月采购金额环比上涨 <span className="font-bold text-blue-700">8.6%</span>，主要由<span className="font-semibold text-gray-900">原材料采购增加</span>驱动。
+                    {r2Resp.attribution.conclusion.split('8.6%').map((part, i, arr) =>
+                      i < arr.length - 1 ? <React.Fragment key={i}>{part}<span className="font-bold text-blue-700">8.6%</span></React.Fragment> : part
+                    )}
                   </p>
                   <div className="space-y-3">
-                    <div className="flex gap-2.5">
-                      <div className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[11px] font-bold shrink-0">1</div>
-                      <p className="text-[13px] text-gray-800 pt-0.5">老供应商原材料采购金额增加 ¥820,000，贡献了 76% 的涨幅段。</p>
-                    </div>
-                    <div className="flex gap-2.5">
-                      <div className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[11px] font-bold shrink-0">2</div>
-                      <p className="text-[13px] text-gray-800 pt-0.5">新增 3 个大额测试设备采购订单，一次性金额达 ¥160,000。</p>
-                    </div>
-                    <div className="flex gap-2.5">
-                      <div className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[11px] font-bold shrink-0">3</div>
-                      <p className="text-[13px] text-gray-800 pt-0.5">核心供应商 A 级部件本月续签指导价单价平均上涨 5.2%。</p>
-                    </div>
+                    {r2Resp.attribution.reasons.map((reason) => (
+                      <div key={reason.index} className="flex gap-2.5">
+                        <div className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[11px] font-bold shrink-0">{reason.index}</div>
+                        <p className="text-[13px] text-gray-800 pt-0.5">{reason.text}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -332,54 +311,44 @@ export default function DataQueryState() {
                 {/* Detail Table Fragment */}
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm col-span-2 overflow-hidden">
                   <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-                    <h3 className="text-[14px] font-medium text-gray-900">导致上涨的采购订单明细（节选）</h3>
+                    <h3 className="text-[14px] font-medium text-gray-900">{r2Resp.detailTable.title}</h3>
                     <button className="text-[12px] text-blue-600 font-medium hover:text-blue-700">查看全部</button>
                   </div>
                   <div className="p-4 bg-gray-50/50">
                     <div className="flex flex-wrap gap-2 mb-3">
-                       <span className="px-2 py-0.5 rounded text-[11px] bg-white border border-gray-200 text-gray-600">时间 = 2026-04</span>
-                       <span className="px-2 py-0.5 rounded text-[11px] bg-white border border-gray-200 text-gray-600">状态 = 已审核</span>
+                       {r2Resp.detailTable.filters.map((f) => (
+                         <span key={f.label} className="px-2 py-0.5 rounded text-[11px] bg-white border border-gray-200 text-gray-600">{f.label} = {f.value}</span>
+                       ))}
                     </div>
                     <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="bg-gray-50 border-b border-gray-200">
-                            <th className="px-4 py-2.5 text-[12px] font-semibold text-gray-600">订单号</th>
-                            <th className="px-4 py-2.5 text-[12px] font-semibold text-gray-600">供应商</th>
-                            <th className="px-4 py-2.5 text-[12px] font-semibold text-gray-600">订单日期</th>
-                            <th className="px-4 py-2.5 text-[12px] font-semibold text-gray-600 text-right">金额 (¥)</th>
-                            <th className="px-4 py-2.5 text-[12px] font-semibold text-gray-600 border-l border-gray-200 text-center">状态</th>
+                            {r2Resp.detailTable.columns.map((col) => (
+                              <th key={col} className={cn(
+                                "px-4 py-2.5 text-[12px] font-semibold text-gray-600",
+                                col === '金额 (¥)' ? "text-right" : col === '状态' ? "border-l border-gray-200 text-center" : ""
+                              )}>{col}</th>
+                            ))}
                           </tr>
                         </thead>
                         <tbody className="text-[13px]">
-                          <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                            <td className="px-4 py-2.5 font-mono text-gray-900">PO-20260405-012</td>
-                            <td className="px-4 py-2.5 text-gray-700">智造科技材料有限公司</td>
-                            <td className="px-4 py-2.5 text-gray-500 font-mono">2026-04-05</td>
-                            <td className="px-4 py-2.5 text-gray-900 font-medium text-right">245,000</td>
-                            <td className="px-4 py-2.5 border-l border-gray-100 text-center"><span className="px-2 py-0.5 bg-green-50 text-green-700 rounded text-[11px] font-medium">已审核</span></td>
-                          </tr>
-                          <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                            <td className="px-4 py-2.5 font-mono text-gray-900">PO-20260412-008</td>
-                            <td className="px-4 py-2.5 text-gray-700">华东先进设备集团</td>
-                            <td className="px-4 py-2.5 text-gray-500 font-mono">2026-04-12</td>
-                            <td className="px-4 py-2.5 text-gray-900 font-medium text-right">160,000</td>
-                            <td className="px-4 py-2.5 border-l border-gray-100 text-center"><span className="px-2 py-0.5 bg-green-50 text-green-700 rounded text-[11px] font-medium">已审核</span></td>
-                          </tr>
-                          <tr className="hover:bg-gray-50 transition-colors">
-                            <td className="px-4 py-2.5 font-mono text-gray-900">PO-20260418-045</td>
-                            <td className="px-4 py-2.5 text-gray-700">智造科技材料有限公司</td>
-                            <td className="px-4 py-2.5 text-gray-500 font-mono">2026-04-18</td>
-                            <td className="px-4 py-2.5 text-gray-900 font-medium text-right">182,500</td>
-                            <td className="px-4 py-2.5 border-l border-gray-100 text-center"><span className="px-2 py-0.5 bg-green-50 text-green-700 rounded text-[11px] font-medium">已审核</span></td>
-                          </tr>
+                          {r2Resp.detailTable.rows.map((row, i) => (
+                            <tr key={row.orderNo} className={cn("hover:bg-gray-50 transition-colors", i < r2Resp.detailTable.rows.length - 1 && "border-b border-gray-100")}>
+                              <td className="px-4 py-2.5 font-mono text-gray-900">{row.orderNo}</td>
+                              <td className="px-4 py-2.5 text-gray-700">{row.supplier}</td>
+                              <td className="px-4 py-2.5 text-gray-500 font-mono">{row.date}</td>
+                              <td className="px-4 py-2.5 text-gray-900 font-medium text-right">{row.amount.toLocaleString()}</td>
+                              <td className="px-4 py-2.5 border-l border-gray-100 text-center"><span className="px-2 py-0.5 bg-green-50 text-green-700 rounded text-[11px] font-medium">{row.status}</span></td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
                     </div>
                   </div>
                   <div className="px-5 py-3 border-t border-gray-100 flex items-center gap-3">
-                     <button className="px-4 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-md text-[12px] font-medium hover:bg-gray-50 shadow-sm transition-colors">生成深入分析报告</button>
-                     <button className="px-4 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-md text-[12px] font-medium hover:bg-gray-50 shadow-sm transition-colors flex items-center gap-1"><Download size={14}/> 导出明细</button>
+                     <button className="px-4 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-md text-[12px] font-medium hover:bg-gray-50 shadow-sm transition-colors">{r2Resp.detailTable.actions[0]}</button>
+                     <button className="px-4 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-md text-[12px] font-medium hover:bg-gray-50 shadow-sm transition-colors flex items-center gap-1"><Download size={14}/> {r2Resp.detailTable.actions[1]}</button>
                   </div>
                 </div>
 
@@ -446,25 +415,29 @@ export default function DataQueryState() {
                 <div className="p-4 space-y-3">
                   <div className="flex flex-col gap-1">
                     <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">分析指标</span>
-                    <span className="text-[14px] text-gray-900 font-medium">采购金额</span>
+                    <span className="text-[14px] text-gray-900 font-medium">{sidebarCtx.calibre.metric}</span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">时间范围</span>
-                    <span className="text-[13px] text-gray-800 font-mono bg-gray-50 px-1.5 py-0.5 rounded w-fit">2026-04-01 至 2026-04-30</span>
+                    <span className="text-[13px] text-gray-800 font-mono bg-gray-50 px-1.5 py-0.5 rounded w-fit">{sidebarCtx.calibre.timeRange}</span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">计算口径</span>
-                    <span className="text-[13px] text-gray-800">已审核采购订单含税金额</span>
+                    <span className="text-[13px] text-gray-800">{sidebarCtx.calibre.calibre}</span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">统计范围</span>
-                    <span className="text-[13px] text-gray-800 bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full w-fit">供应链业务域</span>
+                    <span className="text-[13px] text-gray-800 bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full w-fit">{sidebarCtx.calibre.scope}</span>
                   </div>
                   <div className="flex flex-col gap-1 pt-1 mt-1 border-t border-gray-100">
                     <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">筛选条件</span>
                     <div className="flex flex-wrap gap-1.5">
-                      <span className="text-[12px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded">订单状态 = 已审核</span>
-                      <span className="text-[12px] bg-red-50 text-red-700 border border-red-100 px-2 py-0.5 rounded">订单类型 ≠ 作废</span>
+                      {sidebarCtx.calibre.filters.map((f) => (
+                        <span key={f.label} className={cn(
+                          "text-[12px] px-2 py-0.5 rounded",
+                          f.type === 'warning' ? "bg-red-50 text-red-700 border border-red-100" : "bg-gray-100 text-gray-700"
+                        )}>{f.label} = {f.value}</span>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -478,38 +451,38 @@ export default function DataQueryState() {
                 <div className="p-4 space-y-3">
                   <div className="flex flex-col gap-1">
                     <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">数据源</span>
-                    <span className="text-[13px] text-gray-800 font-mono">supply_chain_prod</span>
+                    <span className="text-[13px] text-gray-800 font-mono">{sidebarCtx.dataSource.name}</span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">来源表</span>
-                    <span className="text-[13px] text-gray-800 font-mono text-blue-600 cursor-pointer hover:underline">dwd_scm_purchase_order_line</span>
+                    <span className="text-[13px] text-gray-800 font-mono text-blue-600 cursor-pointer hover:underline">{sidebarCtx.dataSource.table}</span>
                   </div>
                   <div className="flex gap-4">
                      <div className="flex flex-col gap-1 flex-1">
                        <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">来源字段</span>
-                       <span className="text-[13px] text-gray-800 font-mono truncate">amount_tax_inc...</span>
+                       <span className="text-[13px] text-gray-800 font-mono truncate">{sidebarCtx.dataSource.field}</span>
                      </div>
                      <div className="flex flex-col gap-1 flex-1">
                        <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">时间字段</span>
-                       <span className="text-[13px] text-gray-800 font-mono truncate">po_approved_da...</span>
+                       <span className="text-[13px] text-gray-800 font-mono truncate">{sidebarCtx.dataSource.timeField}</span>
                      </div>
                   </div>
                   <div className="pt-2 mt-2 border-t border-gray-100 flex flex-col gap-2.5">
                     <div className="flex items-center justify-between">
                        <span className="text-[12px] text-gray-500">更新时间</span>
-                       <span className="text-[12px] text-gray-800 font-mono">2026-05-04 09:30</span>
+                       <span className="text-[12px] text-gray-800 font-mono">{sidebarCtx.dataSource.updatedTime}</span>
                     </div>
                     <div className="flex items-center justify-between">
                        <span className="text-[12px] text-gray-500">权限状态</span>
-                       <span className="text-[12px] text-green-700 bg-green-50 px-1.5 py-0.5 rounded font-medium">可查询</span>
+                       <span className="text-[12px] text-green-700 bg-green-50 px-1.5 py-0.5 rounded font-medium">{sidebarCtx.dataSource.permission}</span>
                     </div>
                      <div className="flex items-center justify-between">
                        <span className="text-[12px] text-gray-500">数据质量</span>
-                       <span className="text-[12px] text-gray-800">通过最近一次检查</span>
+                       <span className="text-[12px] text-gray-800">{sidebarCtx.dataSource.quality}</span>
                     </div>
                      <div className="flex items-center justify-between">
                        <span className="text-[12px] text-gray-500">综合可信度</span>
-                       <span className="text-[12px] text-green-600 font-bold flex items-center gap-1"><CheckCircle2 size={12}/> 高</span>
+                       <span className="text-[12px] text-green-600 font-bold flex items-center gap-1"><CheckCircle2 size={12}/> {sidebarCtx.dataSource.confidence}</span>
                     </div>
                   </div>
                 </div>
@@ -536,34 +509,27 @@ export default function DataQueryState() {
                     <div className="mb-4 space-y-1">
                       <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider block mb-1.5">查询步骤</span>
                       <ol className="text-[12px] text-gray-700 list-decimal pl-4 space-y-1">
-                         <li>匹配指标：<span className="font-medium text-gray-900">采购金额</span></li>
-                         <li>确定时间：<span className="font-medium text-gray-900">上个月</span></li>
-                         <li>选择事实表：<span className="font-mono text-[11px]">dwd_scm_purchase_order_line</span></li>
-                         <li>应用过滤：<span className="font-mono text-[11px]">order_status = 'approved'</span></li>
-                         <li>聚合方式：<span className="font-mono text-[11px]">SUM(amount_tax_included)</span></li>
+                         {r1Resp.sqlPlan.steps.map((step) => (
+                           <li key={step}>{step}</li>
+                         ))}
                       </ol>
                     </div>
                     
                     <div className="mb-4">
                        <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider block mb-1.5">SQL 摘要</span>
                        <div className="bg-[#1E293B] rounded-lg p-3 overflow-x-auto">
-<pre className="text-[11px] text-[#E2E8F0] font-mono whitespace-pre-wrap leading-relaxed">
-<span className="text-pink-400">SELECT</span> <span className="text-blue-300">SUM</span>(amount_tax_included) <span className="text-pink-400">AS</span> purchase_amount
-<span className="text-pink-400">FROM</span> supply_chain_prod.dwd_scm_purchase_order_line
-<span className="text-pink-400">WHERE</span> po_approved_date <span className="text-pink-400">BETWEEN</span> <span className="text-amber-300">'2026-04-01'</span> <span className="text-pink-400">AND</span> <span className="text-amber-300">'2026-04-30'</span>
-  <span className="text-pink-400">AND</span> order_status = <span className="text-amber-300">'approved'</span>;
-</pre>
+<pre className="text-[11px] text-[#E2E8F0] font-mono whitespace-pre-wrap leading-relaxed">{r1Resp.sqlPlan.sql}</pre>
                        </div>
                     </div>
 
                     <div className="pt-3 border-t border-gray-200/60 grid grid-cols-2 gap-2 text-[12px]">
                        <div className="flex flex-col">
                           <span className="text-gray-500">执行耗时</span>
-                          <span className="text-gray-900 font-medium font-mono">2.3s</span>
+                          <span className="text-gray-900 font-medium font-mono">{r1Resp.sqlPlan.executionTime}</span>
                        </div>
                        <div className="flex flex-col">
                           <span className="text-gray-500">扫描行数</span>
-                          <span className="text-gray-900 font-medium font-mono">184,320</span>
+                          <span className="text-gray-900 font-medium font-mono">{r1Resp.sqlPlan.scannedRows.toLocaleString()}</span>
                        </div>
                     </div>
                   </div>
@@ -586,8 +552,9 @@ export default function DataQueryState() {
                        <div>
                          <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider block mb-2">对话历史</span>
                          <div className="space-y-2 border-l-2 border-blue-200 pl-3">
-                            <div className="text-[12px] text-gray-600">1. 上个月采购金额是多少？</div>
-                            <div className="text-[12px] font-medium text-gray-900">2. 为什么本月采购金额上涨？</div>
+                            {mockData.rounds.map((round, i) => (
+                              <div key={round.id} className={cn("text-[12px]", i === mockData.rounds.length - 1 ? "font-medium text-gray-900" : "text-gray-600")}>{i + 1}. {round.userQuery.content}</div>
+                            ))}
                          </div>
                        </div>
                        <div className="pt-3 border-t border-gray-200/60">

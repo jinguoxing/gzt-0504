@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { Share2, MoreHorizontal, User, Sparkles, CheckCircle2, ChevronRight, ChevronDown, Download, Send, FileText, Database, AlertCircle, RefreshCw, ArrowLeft, AlertTriangle, HelpCircle, Network, Maximize2, Table, PanelRight } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import mockData from '@/mock/task-execution.json';
+
+const task = mockData.task;
+const completedStages = task.stages.filter(s => s.status === 'COMPLETED');
+const currentStage = task.stages.find(s => s.status === 'RUNNING');
+const pendingStages = task.stages.filter(s => s.status === 'PENDING');
 
 export default function ExecutionState() {
   const [activeTab, setActiveTab] = useState<'plan' | 'detail'>('plan');
@@ -16,20 +22,20 @@ export default function ExecutionState() {
         <div className="px-8 py-5 bg-white border-b border-[#E5E7EB] flex-shrink-0 flex items-start justify-between z-10">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-[20px] font-bold text-gray-900 truncate max-w-lg">供应链语义治理闭环任务</h2>
+              <h2 className="text-[20px] font-bold text-gray-900 truncate max-w-lg">{task.name}</h2>
               <span className="px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-[12px] font-semibold flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
                 执行中
               </span>
             </div>
             <div className="flex items-center gap-4 text-[13px] text-gray-500">
-              <span>项目：供应链语义治理项目</span>
+              <span>项目：{task.project.name}</span>
               <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-              <span>创建人：李桐</span>
+              <span>创建人：{task.creator.name}</span>
               <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-              <span>当前阶段：<span className="font-medium text-gray-700">5 / 8</span></span>
+              <span>当前阶段：<span className="font-medium text-gray-700">{currentStage?.index} / {task.stages.length}</span></span>
               <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-              <span>整体进度：<span className="font-medium text-gray-700">78%</span></span>
+              <span>整体进度：<span className="font-medium text-gray-700">{task.progress}%</span></span>
               <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
               <span>最近更新：09:50</span>
             </div>
@@ -754,54 +760,48 @@ export default function ExecutionState() {
                       <span className="text-[13px] font-bold text-gray-900 tracking-wide uppercase group-hover:text-blue-600 transition-colors">整体进度</span>
                       <ChevronDown size={14} className={cn("text-gray-400 group-hover:text-blue-500 transition-transform duration-200", isPlanExpanded ? "rotate-180" : "")} />
                     </div>
-                    <span className="text-[14px] font-bold text-blue-600">78%</span>
+                    <span className="text-[14px] font-bold text-blue-600">{task.progress}%</span>
                   </div>
                   <div className={cn("w-full h-2 bg-gray-100 rounded-full overflow-hidden transition-all", isPlanExpanded && "mb-6")}>
-                    <div className="h-full bg-blue-500 rounded-full w-[78%]"></div>
+                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${task.progress}%` }}></div>
                   </div>
 
                   {isPlanExpanded && (
                     <div className="relative animate-in slide-in-from-top-2 duration-300">
                       <div className="absolute left-[9px] top-4 bottom-8 w-px bg-gray-200"></div>
                       <ul className="space-y-5 relative">
-                        {[
-                          { title: '1. 选择与采集', status: 'done' },
-                          { title: '2. Schema 扫描', status: 'done' },
-                          { title: '3. 业务表识别', status: 'done' },
-                          { title: '4. 字段候选生成', status: 'done' },
-                          { title: '5. 字段语义理解', status: 'active' },
-                          { title: '6. 业务对象生成', status: 'pending' },
-                          { title: '7. 血缘与影响分析', status: 'pending' },
-                          { title: '8. 质量校验与校准', status: 'pending' },
-                        ].map((item, i) => (
-                          <li key={i} className="flex gap-4 relative">
-                            {item.status === 'done' && (
+                        {task.stages.map((stage) => {
+                          const status = stage.status === 'COMPLETED' ? 'done' : stage.status === 'RUNNING' ? 'active' : 'pending';
+                          return (
+                          <li key={stage.id} className="flex gap-4 relative">
+                            {status === 'done' && (
                               <div className="w-5 h-5 rounded-full bg-green-500 border-2 border-white flex items-center justify-center text-white flex-shrink-0 mt-0.5 z-10 shadow-sm">
                                 <CheckCircle2 size={12} strokeWidth={3} />
                               </div>
                             )}
-                            {item.status === 'active' && (
+                            {status === 'active' && (
                               <div className="w-5 h-5 rounded-full bg-blue-100 border-2 border-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5 z-10">
                                 <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                               </div>
                             )}
-                            {item.status === 'pending' && (
+                            {status === 'pending' && (
                               <div className="w-5 h-5 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center flex-shrink-0 mt-0.5 z-10"></div>
                             )}
-                            
+
                             <div>
                               <div className={cn(
                                 "text-[14px] font-semibold",
-                                item.status === 'done' ? "text-gray-900" : item.status === 'active' ? "text-blue-600" : "text-gray-400"
+                                status === 'done' ? "text-gray-900" : status === 'active' ? "text-blue-600" : "text-gray-400"
                               )}>
-                                {item.title}
+                                {stage.index}. {stage.name}
                               </div>
                               <div className="text-[12px] text-gray-500 mt-1">
-                                {item.status === 'done' ? '已完成' : item.status === 'active' ? '执行中，高亮' : '待开始'}
+                                {status === 'done' ? '已完成' : status === 'active' ? '执行中，高亮' : '待开始'}
                               </div>
                             </div>
                           </li>
-                        ))}
+                          );
+                        })}
                       </ul>
                     </div>
                   )}
@@ -816,7 +816,7 @@ export default function ExecutionState() {
                     <div className="flex items-center justify-between mb-2">
                        <div className="flex items-center gap-2 text-gray-900 font-semibold text-[13px]">
                          <Database size={14} className="text-gray-500" />
-                         supply_chain_prod
+                         {task.dataSource.name}
                        </div>
                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] bg-green-50 text-green-700 font-medium">
                          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
@@ -827,11 +827,11 @@ export default function ExecutionState() {
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-[12px]">
                         <span className="text-gray-500">数据源类型</span>
-                        <span className="text-gray-700 font-medium">MySQL</span>
+                        <span className="text-gray-700 font-medium">{task.dataSource.type}</span>
                       </div>
                       <div className="flex items-center justify-between text-[12px]">
                         <span className="text-gray-500">扫描范围</span>
-                        <span className="text-gray-700 font-medium">ods_scm, dwd_scm</span>
+                        <span className="text-gray-700 font-medium">{task.dataSource.database}</span>
                       </div>
                       <div className="flex items-center justify-between text-[12px]">
                         <span className="text-gray-500">权限状态</span>
@@ -840,8 +840,8 @@ export default function ExecutionState() {
                     </div>
 
                     <div className="flex gap-4 text-[12px] pt-3 mt-3 border-t border-gray-200">
-                      <div>已选表：<span className="font-semibold text-gray-900">142</span></div>
-                      <div>扫描字段：<span className="font-semibold text-gray-900">4,920</span></div>
+                      <div>已选表：<span className="font-semibold text-gray-900">{task.dataSource.selectedTableCount.toLocaleString()}</span></div>
+                      <div>扫描字段：<span className="font-semibold text-gray-900">{task.dataSource.scannedFieldCount.toLocaleString()}</span></div>
                     </div>
                   </div>
                 </div>
@@ -916,11 +916,11 @@ export default function ExecutionState() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center text-[13px]">
                       <span className="text-gray-500">任务 ID</span>
-                      <span className="font-medium text-gray-900 tracking-wider">TSK-20260504-001</span>
+                      <span className="font-medium text-gray-900 tracking-wider">{task.id}</span>
                     </div>
                     <div className="flex justify-between items-center text-[13px]">
                       <span className="text-gray-500">创建人</span>
-                      <span className="font-medium text-gray-900">李桐</span>
+                      <span className="font-medium text-gray-900">{task.creator.name}</span>
                     </div>
                     <div className="flex justify-between items-center text-[13px]">
                       <span className="text-gray-500">创建时间</span>
@@ -944,11 +944,11 @@ export default function ExecutionState() {
                   <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 space-y-2">
                     <div className="text-[13px] text-gray-700 flex">
                       <span className="text-gray-500 w-[60px] flex-shrink-0">连接：</span>
-                      <span className="font-medium">supply_chain_prod<br/><span className="text-[12px] font-normal text-gray-500">MySQL (10.10.10.25)</span></span>
+                      <span className="font-medium">{task.dataSource.name}<br/><span className="text-[12px] font-normal text-gray-500">{task.dataSource.type} ({task.dataSource.host})</span></span>
                     </div>
                     <div className="text-[13px] text-gray-700 flex">
                       <span className="text-gray-500 w-[60px] flex-shrink-0">Schema：</span>
-                      <span className="font-medium">ods_scm, dwd_scm</span>
+                      <span className="font-medium">{task.dataSource.database}</span>
                     </div>
                     <div className="text-[13px] text-gray-700 flex">
                       <span className="text-gray-500 w-[60px] flex-shrink-0">排除规则：</span>

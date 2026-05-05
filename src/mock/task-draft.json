@@ -1,0 +1,254 @@
+{
+  "draft": {
+    "id": "draft-supply-chain-loop",
+    "name": "供应链语义治理闭环任务",
+    "objective": "对供应链数据库进行语义治理，扫描 Schema，识别业务相关表，理解字段语义，生成业务对象与交付物。",
+    "typeTags": [
+      "语义治理",
+      "Schema 扫描",
+      "业务对象生成",
+      "交付物生成"
+    ],
+    "dataSource": {
+      "id": "ds-supply-chain-prod",
+      "name": "supply_chain_prod",
+      "type": "MySQL",
+      "host": "10.10.10.25",
+      "port": 3306,
+      "database": "supply_chain_prod",
+      "status": "CONNECTED",
+      "selectedTableCount": 128,
+      "scannedFieldCount": 4920
+    },
+    "scanScope": {
+      "schemas": [
+        "ods_scm",
+        "dwd_scm"
+      ],
+      "estimatedTables": 142,
+      "estimatedFields": 4920
+    },
+    "contextResources": [
+      {
+        "id": "res-prd",
+        "name": "供应链PRD_v2.1.pdf",
+        "type": "PDF",
+        "sizeBytes": 2726297,
+        "uploadedBy": {
+          "id": "u-litong",
+          "name": "李桐",
+          "email": "liming@semovix.com",
+          "avatarUrl": "/avatars/litong.png",
+          "role": "owner"
+        },
+        "uploadedAt": "2025-05-15T09:00:00+08:00"
+      },
+      {
+        "id": "res-field-rule",
+        "name": "字段语义规则.xlsx",
+        "type": "XLSX",
+        "sizeBytes": 38912,
+        "uploadedBy": {
+          "id": "u-litong",
+          "name": "李桐",
+          "email": "liming@semovix.com",
+          "avatarUrl": "/avatars/litong.png",
+          "role": "owner"
+        },
+        "uploadedAt": "2025-05-15T09:02:00+08:00"
+      },
+      {
+        "id": "res-object-def",
+        "name": "业务对象定义.docx",
+        "type": "DOCX",
+        "sizeBytes": 114688,
+        "uploadedBy": {
+          "id": "u-litong",
+          "name": "李桐",
+          "email": "liming@semovix.com",
+          "avatarUrl": "/avatars/litong.png",
+          "role": "owner"
+        },
+        "uploadedAt": "2025-05-15T09:03:00+08:00"
+      }
+    ],
+    "deliverableRequirements": [
+      "对象模型",
+      "字段语义字典",
+      "血缘关系",
+      "质量报告",
+      "冲突字段清单",
+      "语义治理报告"
+    ],
+    "estimatedDurationMinutes": 84,
+    "riskLevel": "LOW",
+    "stages": [
+      {
+        "id": "stage-1",
+        "index": 1,
+        "name": "选择与采集",
+        "status": "COMPLETED",
+        "progress": 100,
+        "completedAt": "2025-05-16T09:10:00+08:00",
+        "summary": "完成数据源选择与连接"
+      },
+      {
+        "id": "stage-2",
+        "index": 2,
+        "name": "Schema 扫描",
+        "status": "COMPLETED",
+        "progress": 100,
+        "completedAt": "2025-05-16T09:20:00+08:00",
+        "summary": "扫描 128 张表，4,920 个字段"
+      },
+      {
+        "id": "stage-3",
+        "index": 3,
+        "name": "业务表识别",
+        "status": "COMPLETED",
+        "progress": 100,
+        "completedAt": "2025-05-16T09:32:00+08:00",
+        "summary": "识别供应链业务相关表"
+      },
+      {
+        "id": "stage-4",
+        "index": 4,
+        "name": "字段候选生成",
+        "status": "COMPLETED",
+        "progress": 100,
+        "completedAt": "2025-05-16T09:40:00+08:00",
+        "summary": "生成字段语义候选"
+      },
+      {
+        "id": "stage-5",
+        "index": 5,
+        "name": "字段语义理解",
+        "status": "RUNNING",
+        "progress": 78,
+        "startedAt": "2025-05-16T09:45:00+08:00",
+        "summary": "识别字段语义与冲突字段"
+      },
+      {
+        "id": "stage-6",
+        "index": 6,
+        "name": "业务对象生成",
+        "status": "PENDING",
+        "progress": 0
+      },
+      {
+        "id": "stage-7",
+        "index": 7,
+        "name": "血缘与影响分析",
+        "status": "PENDING",
+        "progress": 0
+      },
+      {
+        "id": "stage-8",
+        "index": 8,
+        "name": "质量校验与校准",
+        "status": "PENDING",
+        "progress": 0
+      }
+    ],
+    "advancedConfig": {
+      "samplingStrategy": "字段全量扫描，数据样例抽样",
+      "parallelism": 10,
+      "outputFormats": [
+        "PDF",
+        "XLSX",
+        "CSV",
+        "ZIP"
+      ],
+      "permissionScope": "项目成员可见",
+      "autoConfirmThreshold": 0.95,
+      "retryPolicy": "失败自动重试 2 次"
+    },
+    "recentChanges": [
+      {
+        "id": "chg-1",
+        "createdAt": "2025-05-15T10:32:00+08:00",
+        "title": "扫描范围已通过对话更新",
+        "changes": [
+          {
+            "field": "扫描范围",
+            "from": "全库",
+            "to": "ods_scm, dwd_scm"
+          },
+          {
+            "field": "预计扫描表数量",
+            "from": "286",
+            "to": "142"
+          },
+          {
+            "field": "预计耗时",
+            "from": "2.5 小时",
+            "to": "1.4 小时"
+          },
+          {
+            "field": "风险等级",
+            "from": "中",
+            "to": "低"
+          }
+        ]
+      }
+    ],
+    "status": "DRAFT"
+  },
+  "conversation": [
+    {
+      "id": "msg-1",
+      "role": "user",
+      "authorName": "你",
+      "createdAt": "2025-05-15T10:30:00+08:00",
+      "content": "请对供应链数据库进行语义治理，扫描 Schema、识别业务相关表、理解字段语义、生成业务对象与交付物。"
+    },
+    {
+      "id": "msg-2",
+      "role": "xino",
+      "authorName": "Xino",
+      "createdAt": "2025-05-15T10:31:00+08:00",
+      "content": "我已理解你的目标，并整理出一个任务草稿。右侧是当前任务配置，你可以直接确认，也可以继续告诉我需要调整的内容。"
+    },
+    {
+      "id": "msg-3",
+      "role": "user",
+      "authorName": "你",
+      "createdAt": "2025-05-15T10:32:00+08:00",
+      "content": "只扫描采购相关 Schema，不要扫描全库。"
+    },
+    {
+      "id": "msg-4",
+      "role": "xino",
+      "authorName": "Xino",
+      "createdAt": "2025-05-15T10:32:20+08:00",
+      "content": "已更新任务草稿。扫描范围已从全库调整为 ods_scm、dwd_scm，预计耗时降低至 1.4 小时。",
+      "changeSummary": {
+        "id": "chg-1",
+        "createdAt": "2025-05-15T10:32:00+08:00",
+        "title": "已更新任务草稿",
+        "changes": [
+          {
+            "field": "扫描范围",
+            "from": "全库",
+            "to": "ods_scm, dwd_scm"
+          },
+          {
+            "field": "预计扫描表数量",
+            "from": "286",
+            "to": "142"
+          },
+          {
+            "field": "预计耗时",
+            "from": "2.5 小时",
+            "to": "1.4 小时"
+          },
+          {
+            "field": "风险等级",
+            "from": "中",
+            "to": "低"
+          }
+        ]
+      }
+    }
+  ]
+}

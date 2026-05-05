@@ -6,128 +6,44 @@ import {
   Users, Zap, RotateCw, LayoutGrid, Inbox, Sparkles
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import mockData from '@/mock/task-center.json';
 
 // --- Mock Data ---
 
 type Scope = 'my' | 'team' | 'all';
 
-const SCOPE_TABS = [
-  { key: 'my' as Scope, label: '我的任务' },
-  { key: 'team' as Scope, label: '团队任务' },
-  { key: 'all' as Scope, label: '全部任务' },
-];
+const SCOPE_TABS = mockData.scopeTabs as { key: Scope; label: string }[];
+
+const KPI_ICONS: Record<string, any> = {
+  '全部任务': ListTodo, '执行中': Play, '待我处理': Clock, '待处理': Clock, '已完成': CheckCircle2, '异常': AlertTriangle,
+};
 
 const KPI_DATA: Record<Scope, { label: string; value: number; icon: any; color: string; link: string }[]> = {
-  my: [
-    { label: '全部任务', value: 24, icon: ListTodo, color: 'blue', link: '/tasks/all?scope=my' },
-    { label: '执行中', value: 6, icon: Play, color: 'emerald', link: '/tasks/all?scope=my&status=RUNNING' },
-    { label: '待我处理', value: 3, icon: Clock, color: 'orange', link: '/tasks/reviews?assignee=me&status=PENDING' },
-    { label: '已完成', value: 12, icon: CheckCircle2, color: 'green', link: '/tasks/all?scope=my&status=COMPLETED' },
-    { label: '异常', value: 2, icon: AlertTriangle, color: 'red', link: '/tasks/all?scope=my&status=BLOCKED' },
-  ],
-  team: [
-    { label: '全部任务', value: 58, icon: ListTodo, color: 'blue', link: '/tasks/all?scope=team' },
-    { label: '执行中', value: 14, icon: Play, color: 'emerald', link: '/tasks/all?scope=team&status=RUNNING' },
-    { label: '待处理', value: 9, icon: Clock, color: 'orange', link: '/tasks/reviews?scope=team&status=PENDING' },
-    { label: '已完成', value: 31, icon: CheckCircle2, color: 'green', link: '/tasks/all?scope=team&status=COMPLETED' },
-    { label: '异常', value: 4, icon: AlertTriangle, color: 'red', link: '/tasks/all?scope=team&status=BLOCKED' },
-  ],
-  all: [
-    { label: '全部任务', value: 128, icon: ListTodo, color: 'blue', link: '/tasks/all?scope=all' },
-    { label: '执行中', value: 36, icon: Play, color: 'emerald', link: '/tasks/all?scope=all&status=RUNNING' },
-    { label: '待处理', value: 17, icon: Clock, color: 'orange', link: '/tasks/reviews?status=PENDING' },
-    { label: '已完成', value: 75, icon: CheckCircle2, color: 'green', link: '/tasks/all?scope=all&status=COMPLETED' },
-    { label: '异常', value: 4, icon: AlertTriangle, color: 'red', link: '/tasks/all?scope=all&status=BLOCKED' },
-  ],
+  my: mockData.kpiData.my.map(k => ({ ...k, icon: KPI_ICONS[k.label] || ListTodo })),
+  team: mockData.kpiData.team.map(k => ({ ...k, icon: KPI_ICONS[k.label] || ListTodo })),
+  all: mockData.kpiData.all.map(k => ({ ...k, icon: KPI_ICONS[k.label] || ListTodo })),
 };
 
-const RUNNING_TASKS: Record<Scope, {
+const RUNNING_TASKS = mockData.runningTasks as Record<Scope, {
   id: string; name: string; type: string; stage: string; progress: number;
   owner: string; updatedAt: string; pendingCount: number; status: string;
-}[]> = {
-  my: [
-    { id: 'task-supply-chain-loop', name: '供应链语义治理闭环任务', type: '语义治理', stage: '字段语义理解 5/8', progress: 78, owner: '李桐', updatedAt: '09:50', pendingCount: 3, status: '执行中' },
-    { id: 'task-customer', name: '客户语义治理任务', type: '语义治理', stage: '业务对象识别 4/7', progress: 61, owner: '陈晨', updatedAt: '08:40', pendingCount: 4, status: '执行中' },
-    { id: 'task-purchase', name: '采购主数据修复任务', type: '主数据', stage: '字段修复 1/4', progress: 18, owner: '孙浩', updatedAt: '10:05', pendingCount: 5, status: '执行中' },
-  ],
-  team: [
-    { id: 'task-supply-chain-loop', name: '供应链语义治理闭环任务', type: '语义治理', stage: '字段语义理解 5/8', progress: 78, owner: '李桐', updatedAt: '09:50', pendingCount: 3, status: '执行中' },
-    { id: 'task-standard', name: '数据标准落地任务', type: '标准管理', stage: '标准映射 3/6', progress: 54, owner: '张悦', updatedAt: '09:35', pendingCount: 2, status: '执行中' },
-    { id: 'task-customer', name: '客户语义治理任务', type: '语义治理', stage: '业务对象识别 4/7', progress: 61, owner: '陈晨', updatedAt: '08:40', pendingCount: 4, status: '执行中' },
-    { id: 'task-purchase', name: '采购主数据修复任务', type: '主数据', stage: '字段修复 1/4', progress: 18, owner: '孙浩', updatedAt: '10:05', pendingCount: 5, status: '执行中' },
-  ],
-  all: [
-    { id: 'task-supply-chain-loop', name: '供应链语义治理闭环任务', type: '语义治理', stage: '字段语义理解 5/8', progress: 78, owner: '李桐', updatedAt: '09:50', pendingCount: 3, status: '执行中' },
-    { id: 'task-standard', name: '数据标准落地任务', type: '标准管理', stage: '标准映射 3/6', progress: 54, owner: '张悦', updatedAt: '09:35', pendingCount: 2, status: '执行中' },
-    { id: 'task-customer', name: '客户语义治理任务', type: '语义治理', stage: '业务对象识别 4/7', progress: 61, owner: '陈晨', updatedAt: '08:40', pendingCount: 4, status: '执行中' },
-    { id: 'task-metadata', name: '元数据自动采集任务', type: '元数据', stage: '数据采集 2/5', progress: 32, owner: '刘欣', updatedAt: '昨天 16:22', pendingCount: 1, status: '异常' },
-    { id: 'task-purchase', name: '采购主数据修复任务', type: '主数据', stage: '字段修复 1/4', progress: 18, owner: '孙浩', updatedAt: '10:05', pendingCount: 5, status: '执行中' },
-  ],
-};
+}[]>;
 
-const ACTION_TABS = ['全部', '待确认', '待审核', '异常', '继续执行'];
+const ACTION_TABS = mockData.actionTabs;
 
-const PENDING_ACTIONS: Record<Scope, { id: string; label: string; count: number; type: string; tab: string; taskId: string }[]> = {
-  my: [
-    { id: '1', label: '字段冲突确认', count: 41, type: '冲突', tab: '待确认', taskId: 'task-supply-chain-loop' },
-    { id: '2', label: '异常字段审核', count: 37, type: '异常', tab: '异常', taskId: 'task-supply-chain-loop' },
-    { id: '3', label: '对象关系确认', count: 5, type: '确认', tab: '待确认', taskId: 'task-customer' },
-  ],
-  team: [
-    { id: '1', label: '字段冲突确认', count: 41, type: '冲突', tab: '待确认', taskId: 'task-supply-chain-loop' },
-    { id: '2', label: '异常字段审核', count: 37, type: '异常', tab: '异常', taskId: 'task-supply-chain-loop' },
-    { id: '3', label: '对象关系确认', count: 5, type: '确认', tab: '待确认', taskId: 'task-customer' },
-    { id: '4', label: '标准映射审核', count: 12, type: '审核', tab: '待审核', taskId: 'task-standard' },
-  ],
-  all: [
-    { id: '1', label: '字段冲突确认', count: 41, type: '冲突', tab: '待确认', taskId: 'task-supply-chain-loop' },
-    { id: '2', label: '异常字段审核', count: 37, type: '异常', tab: '异常', taskId: 'task-supply-chain-loop' },
-    { id: '3', label: '对象关系确认', count: 5, type: '确认', tab: '待确认', taskId: 'task-customer' },
-    { id: '4', label: '标准映射审核', count: 12, type: '审核', tab: '待审核', taskId: 'task-standard' },
-    { id: '5', label: '字段语义继续执行', count: 8, type: '继续', tab: '继续执行', taskId: 'task-purchase' },
-  ],
-};
+const PENDING_ACTIONS = mockData.pendingActions as Record<Scope, { id: string; label: string; count: number; type: string; tab: string; taskId: string }[]>;
 
-const RECENT_VISITS = [
-  { id: 'v1', name: '供应链语义治理闭环任务', type: 'TASK', visitedAt: '10 分钟前', url: '/tasks/task-supply-chain-loop' },
-  { id: 'v2', name: '字段语义理解结果.xlsx', type: 'FILE', visitedAt: '30 分钟前', url: '/tasks/task-supply-chain-loop/completed' },
-  { id: 'v3', name: '客户语义治理任务', type: 'TASK', visitedAt: '2 小时前', url: '/tasks/task-customer' },
-  { id: 'v4', name: '语义治理报告.pdf', type: 'DELIVERABLE', visitedAt: '昨天', url: '/tasks/task-supply-chain-loop/completed' },
-];
+const RECENT_VISITS = mockData.recentVisits;
 
-const RECENT_ACTIVITIES = [
-  { id: 'a1', actor: 'Xino', verb: '完成了字段语义理解', target: '供应链语义治理闭环任务', time: '09:45', tone: 'blue' },
-  { id: 'a2', actor: '李桐', verb: '确认了', target: '21 条对象关系', time: '10:15', tone: 'green' },
-  { id: 'a3', actor: 'Xino', verb: '检测到', target: '41 个冲突字段', time: '09:32', tone: 'red' },
-  { id: 'a4', actor: '陈晨', verb: '开始执行', target: '客户语义治理任务', time: '08:30', tone: 'blue' },
-  { id: 'a5', actor: 'Xino', verb: '完成了 Schema 扫描', target: '客户语义治理', time: '08:35', tone: 'green' },
-];
+const RECENT_ACTIVITIES = mockData.recentActivities;
 
-const BOARD_DATA: Record<Scope, { createdByMe: number; ownedByMe: number; confirmationsHandled: number; exceptionsHandled: number; avgCompletionRate: number }> = {
-  my: { createdByMe: 8, ownedByMe: 12, confirmationsHandled: 156, exceptionsHandled: 23, avgCompletionRate: 92 },
-  team: { createdByMe: 8, ownedByMe: 12, confirmationsHandled: 342, exceptionsHandled: 58, avgCompletionRate: 89 },
-  all: { createdByMe: 8, ownedByMe: 12, confirmationsHandled: 580, exceptionsHandled: 94, avgCompletionRate: 87 },
-};
+const BOARD_DATA = mockData.boardData as Record<Scope, { createdByMe: number; ownedByMe: number; confirmationsHandled: number; exceptionsHandled: number; avgCompletionRate: number }>;
 
-const RECENT_DELIVERABLES = [
-  { name: '字段语义理解结果.xlsx', time: '2025-05-16 14:12', type: 'XLSX' },
-  { name: '业务对象清单.xlsx', time: '2025-05-16 13:58', type: 'XLSX' },
-  { name: '冲突字段清单.xlsx', time: '2025-05-16 11:20', type: 'XLSX' },
-  { name: '语义治理报告.pdf', time: '2025-05-15 16:30', type: 'PDF' },
-];
+const RECENT_DELIVERABLES = mockData.recentDeliverables;
 
-const QUICK_STARTS = [
-  { label: '语义治理', desc: '扫描 Schema，理解字段语义，生成业务对象', path: '/workbench', color: 'blue' },
-  { label: '找数问数', desc: '自然语言查询业务数据', path: '/data-query', color: 'emerald' },
-];
+const QUICK_STARTS = mockData.quickStarts;
 
-const TYPE_COLOR: Record<string, string> = {
-  '语义治理': 'bg-blue-50 text-blue-700',
-  '标准管理': 'bg-purple-50 text-purple-700',
-  '主数据': 'bg-emerald-50 text-emerald-700',
-  '元数据': 'bg-amber-50 text-amber-700',
-  '质量巡检': 'bg-gray-100 text-gray-700',
-};
+const TYPE_COLOR: Record<string, string> = mockData.typeColor as Record<string, string>;
 
 const colorMap: Record<string, { bg: string; text: string; iconBg: string }> = {
   blue: { bg: 'bg-blue-50', text: 'text-blue-700', iconBg: 'bg-blue-100' },

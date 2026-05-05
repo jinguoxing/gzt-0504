@@ -1,13 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Paperclip, AtSign, Mic, History, Send, ChevronRight, Database, BarChart3 } from 'lucide-react';
+import mockData from '@/mock/workbench-home.json';
 
 const SCENARIOS = [
   {
     key: 'semantic-governance',
     title: '语义治理',
     description: '扫描数据库 Schema，识别业务表，理解字段语义，生成业务对象与交付物。',
-    path: '/draft',  // 后续改为 /workbench?draftId=:id
+    path: '/draft',
     icon: Database,
     buttonText: '开始治理',
     color: 'blue',
@@ -23,6 +24,13 @@ const SCENARIOS = [
   },
 ];
 
+const WEAK_ACTION_ICONS: Record<string, React.ElementType> = {
+  '附件': Paperclip,
+  '@ 资源': AtSign,
+  '语音': Mic,
+  '历史': History,
+};
+
 export default function Home() {
   const navigate = useNavigate();
 
@@ -36,10 +44,10 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center mb-10">
           <h2 className="text-[32px] font-bold text-gray-900 mb-3 tracking-tight">
-            今天想让 Xino 帮你完成什么？
+            {mockData.heroTitle}
           </h2>
           <p className="text-[16px] text-gray-500 font-medium">
-            把目标告诉我，Xino 会理解你的需求，并规划可执行的任务路径。
+            {mockData.heroSubtitle}
           </p>
         </div>
 
@@ -48,24 +56,20 @@ export default function Home() {
           <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-200 p-4 transition-shadow focus-within:shadow-[0_8px_30px_rgb(37,99,235,0.08)] focus-within:border-blue-300">
             <textarea
               className="w-full min-h-[120px] resize-none outline-none text-[16px] leading-relaxed placeholder:text-gray-400 bg-transparent text-gray-900"
-              placeholder="输入任务目标，或 @ 数据源 / 文件 / 对象 / 知识库"
+              placeholder={mockData.inputPlaceholder}
               defaultValue="请对供应链数据库进行语义治理，扫描 Schema、识别业务相关表、理解字段语义、生成业务对象与交付物。"
             ></textarea>
 
             <div className="flex items-center justify-between mt-4">
               <div className="flex items-center gap-1.5 text-gray-400">
-                <button className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 hover:text-gray-700 rounded-lg transition-colors">
-                  <Paperclip size={18} />
-                </button>
-                <button className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 hover:text-gray-700 rounded-lg transition-colors">
-                  <AtSign size={18} />
-                </button>
-                <button className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 hover:text-gray-700 rounded-lg transition-colors">
-                  <Mic size={18} />
-                </button>
-                <button className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 hover:text-gray-700 rounded-lg transition-colors">
-                  <History size={18} />
-                </button>
+                {mockData.weakActions.map((action) => {
+                  const Icon = WEAK_ACTION_ICONS[action] || Paperclip;
+                  return (
+                    <button key={action} className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 hover:text-gray-700 rounded-lg transition-colors">
+                      <Icon size={18} />
+                    </button>
+                  );
+                })}
               </div>
               <button
                 onClick={handleSend}
@@ -135,9 +139,9 @@ export default function Home() {
         {/* Collapsed Sections */}
         <div className="w-full max-w-3xl mt-10 flex items-center justify-center gap-8">
           {[
-            { label: '常用任务', count: 4 },
-            { label: '最近继续', count: 3 },
-            { label: '常用资源', count: 5 }
+            { label: '常用任务', count: mockData.collapsedSections.commonTasks },
+            { label: '最近继续', count: mockData.collapsedSections.recentContinue },
+            { label: '常用资源', count: mockData.collapsedSections.commonResources }
           ].map((item) => (
             <button key={item.label} className="flex items-center gap-2 text-[14px] text-gray-500 hover:text-gray-900 transition-colors group">
               <span className="font-medium">{item.label} <span className="text-gray-400 font-normal">{item.count} 个</span></span>

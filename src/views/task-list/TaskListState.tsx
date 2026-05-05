@@ -6,6 +6,7 @@ import {
   HelpCircle, Inbox, Users, Eye, SlidersHorizontal, X
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import mockData from '@/mock/task-list.json';
 
 interface TaskRow {
   id: string;
@@ -26,50 +27,30 @@ interface TaskRow {
   updatedAt: string;
 }
 
-const ALL_TASKS: TaskRow[] = [
-  { id: 'task-supply-chain-loop', name: '供应链语义治理闭环任务', subtitle: '供应链语义治理团队', type: '语义治理', project: '供应链语义治理项目', projectSlug: 'supply-chain', stage: '字段语义理解', stageId: 'stage-5', stageProgress: '5/8', progress: 78, owner: '李桐', ownerId: 'u-litong', priority: '高', pendingCount: 3, status: '执行中', updatedAt: '今天 09:50' },
-  { id: 'task-standard', name: '数据标准落地任务', subtitle: '标准管理团队', type: '标准管理', project: '供应链语义治理项目', projectSlug: 'supply-chain', stage: '标准映射', stageId: 'stage-3', stageProgress: '3/6', progress: 54, owner: '张悦', ownerId: 'u-zhangyue', priority: '中', pendingCount: 2, status: '执行中', updatedAt: '今天 09:35' },
-  { id: 'task-master-data', name: '主数据对象建模任务', subtitle: '主数据建模组', type: '主数据', project: '主数据治理项目', projectSlug: 'master-data', stage: '模型设计', stageId: 'stage-6', stageProgress: '6/6', progress: 100, owner: '王强', ownerId: 'u-wangqiang', priority: '中', pendingCount: 0, status: '已完成', updatedAt: '昨天 17:48' },
-  { id: 'task-metadata', name: '元数据自动采集任务', subtitle: '数据平台团队', type: '元数据', project: '平台治理项目', projectSlug: 'platform', stage: '数据采集', stageId: 'stage-2', stageProgress: '2/5', progress: 32, owner: '刘欣', ownerId: 'u-liuxin', priority: '高', pendingCount: 1, status: '异常', updatedAt: '昨天 16:22' },
-  { id: 'task-customer', name: '客户语义治理任务', subtitle: '客户治理团队', type: '语义治理', project: '客户语义治理项目', projectSlug: 'customer', stage: '业务对象识别', stageId: 'stage-4', stageProgress: '4/7', progress: 61, owner: '陈晨', ownerId: 'u-chenchen', priority: '中', pendingCount: 4, status: '待确认', updatedAt: '今天 08:40' },
-  { id: 'task-metrics', name: '指标体系建设任务', subtitle: '经营分析团队', type: '标准管理', project: '经营分析项目', projectSlug: 'analytics', stage: '指标定义梳理', stageId: 'stage-2', stageProgress: '2/5', progress: 40, owner: '周宁', ownerId: 'u-zhouning', priority: '低', pendingCount: 2, status: '待审核', updatedAt: '昨天 15:10' },
-  { id: 'task-quality', name: '数据质量巡检任务', subtitle: '数据质量团队', type: '质量巡检', project: '供应链语义治理项目', projectSlug: 'supply-chain', stage: '规则执行', stageId: 'stage-5', stageProgress: '5/5', progress: 100, owner: '李桐', ownerId: 'u-litong', priority: '低', pendingCount: 0, status: '已完成', updatedAt: '昨天 11:20' },
-  { id: 'task-purchase', name: '采购主数据修复任务', subtitle: '采购数据团队', type: '主数据', project: '采购管理项目', projectSlug: 'purchase', stage: '字段修复', stageId: 'stage-1', stageProgress: '1/4', progress: 18, owner: '孙浩', ownerId: 'u-sunhao', priority: '高', pendingCount: 5, status: '执行中', updatedAt: '今天 10:05' },
-];
+const ALL_TASKS = mockData.tasks as TaskRow[];
 
-const STATUS_MAP: Record<string, string> = {
-  'RUNNING': '执行中', 'COMPLETED': '已完成', 'BLOCKED': '异常',
-  'PENDING': '待确认', 'REVIEWING': '待审核',
-};
+const STATUS_MAP: Record<string, string> = mockData.statusMap as Record<string, string>;
 const STATUS_REVERSE: Record<string, string> = Object.fromEntries(
   Object.entries(STATUS_MAP).map(([k, v]) => [v, k])
 );
 
-const STATUS_OPTIONS = ['全部', '执行中', '已完成', '异常', '待确认', '待审核'];
-const TYPE_OPTIONS = ['全部', '语义治理', '标准管理', '主数据', '元数据', '质量巡检'];
-const PROJECT_OPTIONS = ['全部', '供应链语义治理项目', '主数据治理项目', '平台治理项目', '客户语义治理项目', '经营分析项目', '采购管理项目'];
-const OWNER_OPTIONS = ['全部', '李桐', '张悦', '王强', '刘欣', '陈晨', '周宁', '孙浩'];
-const PRIORITY_OPTIONS = ['全部', '高', '中', '低'];
+const STATUS_OPTIONS = mockData.filterOptions.status;
+const TYPE_OPTIONS = mockData.filterOptions.type;
+const PROJECT_OPTIONS = mockData.filterOptions.project;
+const OWNER_OPTIONS = mockData.filterOptions.owner;
+const PRIORITY_OPTIONS = mockData.filterOptions.priority;
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
-const SCOPE_MAP: Record<string, string> = { '我的任务': 'my', '团队任务': 'team', '全部任务': 'all' };
+const SCOPE_MAP: Record<string, string> = mockData.scopeMap as Record<string, string>;
 const SCOPE_REVERSE: Record<string, string> = Object.fromEntries(
   Object.entries(SCOPE_MAP).map(([k, v]) => [v, k])
 );
-const VIEW_MAP: Record<string, string> = { '默认视图': 'default', '我关注的': 'starred', '异常任务': 'abnormal', '已归档': 'archived' };
+const VIEW_MAP: Record<string, string> = mockData.viewMap as Record<string, string>;
 const VIEW_REVERSE: Record<string, string> = Object.fromEntries(
   Object.entries(VIEW_MAP).map(([k, v]) => [v, k])
 );
 
-const COLUMN_CONFIG = [
-  { key: 'typeProject', label: '类型 / 所属项目', defaultVisible: true },
-  { key: 'stage', label: '当前阶段', defaultVisible: true },
-  { key: 'owner', label: '负责人', defaultVisible: true },
-  { key: 'priority', label: '优先级', defaultVisible: true },
-  { key: 'pending', label: '待处理', defaultVisible: true },
-  { key: 'status', label: '状态', defaultVisible: true },
-  { key: 'updatedAt', label: '最近更新时间', defaultVisible: true },
-];
+const COLUMN_CONFIG = mockData.columnConfig as { key: string; label: string; defaultVisible: boolean }[];
 
 // Skeleton row for loading state
 function SkeletonRow() {

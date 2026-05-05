@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Sparkles, User, Paperclip, AtSign, Send, X, Edit2, RotateCw, FileText, ChevronDown, Check, Clock, Settings2 } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import mockData from '@/mock/task-draft.json';
+import { formatDate, formatTime } from '@/mock/helpers';
 
 export default function DraftState({ onExecute }: { onExecute: () => void }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
@@ -43,14 +45,14 @@ export default function DraftState({ onExecute }: { onExecute: () => void }) {
           {/* User Message 1 */}
           <div className="flex flex-col items-end w-full">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[12px] text-gray-400">10:30</span>
-              <span className="font-semibold text-[14px] text-gray-900">你</span>
+              <span className="text-[12px] text-gray-400">{formatTime(mockData.conversation[0].createdAt)}</span>
+              <span className="font-semibold text-[14px] text-gray-900">{mockData.conversation[0].authorName}</span>
               <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0 ml-1">
                 <User size={16} />
               </div>
             </div>
             <div className="text-[15px] text-gray-800 leading-relaxed text-right max-w-3xl mr-11">
-              请对供应链数据库进行语义治理，扫描 Schema、识别业务相关表、理解字段语义、生成业务对象与交付物。
+              {mockData.conversation[0].content}
             </div>
           </div>
 
@@ -62,10 +64,10 @@ export default function DraftState({ onExecute }: { onExecute: () => void }) {
             <div>
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="font-semibold text-[14px] text-gray-900">Xino</span>
-                <span className="text-[12px] text-gray-400">10:31</span>
+                <span className="text-[12px] text-gray-400">{formatTime(mockData.conversation[1].createdAt)}</span>
               </div>
               <div className="text-[15px] text-gray-800 leading-relaxed mb-4">
-                我已理解你的目标，并整理出一个任务草稿。右侧是当前任务配置，你可以直接确认，也可以继续告诉我需要调整的内容。
+                {mockData.conversation[1].content}
               </div>
               
               {/* Suggested Chips (Only show in step 1) */}
@@ -98,14 +100,14 @@ export default function DraftState({ onExecute }: { onExecute: () => void }) {
               {/* User Message 2 */}
               <div className="flex flex-col items-end w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[12px] text-gray-400">10:31</span>
-                  <span className="font-semibold text-[14px] text-gray-900">你</span>
+                  <span className="text-[12px] text-gray-400">{formatTime(mockData.conversation[2].createdAt)}</span>
+                  <span className="font-semibold text-[14px] text-gray-900">{mockData.conversation[2].authorName}</span>
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0 ml-1">
                     <User size={16} />
                   </div>
                 </div>
                 <div className="text-[15px] text-gray-800 leading-relaxed text-right max-w-3xl mr-11">
-                  只扫描采购相关 Schema，不要扫描全库。
+                  {mockData.conversation[2].content}
                 </div>
               </div>
 
@@ -117,34 +119,24 @@ export default function DraftState({ onExecute }: { onExecute: () => void }) {
                 <div className="w-full">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="font-semibold text-[14px] text-gray-900">Xino</span>
-                    <span className="text-[12px] text-gray-400">10:32</span>
+                    <span className="text-[12px] text-gray-400">{formatTime(mockData.conversation[3].createdAt)}</span>
                   </div>
-                  
+
                   <div className="bg-white border border-[#E5E7EB] rounded-xl p-5 shadow-sm max-w-md mt-2">
                     <div className="flex items-center gap-2 mb-4">
                       <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600">
                         <Check size={14} strokeWidth={3} />
                       </div>
-                      <h4 className="font-semibold text-[14px] text-gray-900">已更新任务草稿</h4>
+                      <h4 className="font-semibold text-[14px] text-gray-900">{mockData.conversation[3].changeSummary?.title ?? '已更新任务草稿'}</h4>
                     </div>
-                    
+
                     <div className="space-y-3">
-                      <div className="text-[13px] flex items-start gap-4">
-                        <span className="text-gray-500 w-24 flex-shrink-0">扫描范围：</span>
-                        <span className="text-gray-900">全库 <span className="text-gray-400 mx-1">→</span> <span className="text-blue-600 font-medium">ods_scm, dwd_scm</span></span>
-                      </div>
-                      <div className="text-[13px] flex items-start gap-4">
-                        <span className="text-gray-500 w-24 flex-shrink-0">预计扫描表：</span>
-                        <span className="text-gray-900">286 <span className="text-gray-400 mx-1">→</span> 142</span>
-                      </div>
-                      <div className="text-[13px] flex items-start gap-4">
-                        <span className="text-gray-500 w-24 flex-shrink-0">预计耗时：</span>
-                        <span className="text-gray-900">2.5 小时 <span className="text-gray-400 mx-1">→</span> 1.4 小时</span>
-                      </div>
-                      <div className="text-[13px] flex items-start gap-4">
-                        <span className="text-gray-500 w-24 flex-shrink-0">风险等级：</span>
-                        <span className="text-gray-900">中 <span className="text-gray-400 mx-1">→</span> 低</span>
-                      </div>
+                      {mockData.conversation[3].changeSummary?.changes.map((chg, idx) => (
+                        <div key={idx} className="text-[13px] flex items-start gap-4">
+                          <span className="text-gray-500 w-24 flex-shrink-0">{chg.field}：</span>
+                          <span className="text-gray-900">{chg.from} <span className="text-gray-400 mx-1">→</span> <span className="text-blue-600 font-medium">{chg.to}</span></span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
