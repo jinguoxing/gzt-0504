@@ -1,6 +1,8 @@
 /**
  * 路由路径映射
- * 对齐 docs/task-frontend-contract/02_ROUTES.md
+ * 对齐 docs/semantic_Frontend_Contract/02_ROUTES.md
+ *
+ * 草稿抽屉态通过 /workbench?draftId=:id 控制（P-03）
  */
 export const ROUTE_PATH_MAP: Record<string, string> = {
   workbench: '/workbench',
