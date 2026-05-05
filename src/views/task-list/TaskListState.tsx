@@ -25,9 +25,14 @@ interface TaskRow {
   pendingCount: number;
   status: '执行中' | '已完成' | '异常' | '待确认' | '待审核';
   updatedAt: string;
+  starred: boolean;
+  archived: boolean;
 }
 
 const ALL_TASKS = mockData.tasks as TaskRow[];
+
+// Mock current user — in production this would come from auth context
+const CURRENT_USER_ID = 'u-litong';
 
 const STATUS_MAP: Record<string, string> = mockData.statusMap as Record<string, string>;
 const STATUS_REVERSE: Record<string, string> = Object.fromEntries(
@@ -39,7 +44,6 @@ const TYPE_OPTIONS = mockData.filterOptions.type;
 const PROJECT_OPTIONS = mockData.filterOptions.project;
 const OWNER_OPTIONS = mockData.filterOptions.owner;
 const PRIORITY_OPTIONS = mockData.filterOptions.priority;
-const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
 const SCOPE_MAP: Record<string, string> = mockData.scopeMap as Record<string, string>;
 const SCOPE_REVERSE: Record<string, string> = Object.fromEntries(
@@ -205,9 +209,44 @@ export default function TaskListState() {
   const hasActiveFilters = filterStatus !== '全部' || filterType !== '全部' ||
     filterProject !== '全部' || filterOwner !== '全部' || filterPriority !== '全部' || keyword !== '';
 
-  // Filter tasks
-  const filteredTasks = useMemo(() => {
+  // ── Filtering pipeline ──
+  // Step 1: Scope filtering (determines the "pool" of tasks)
+  const scopeTasks = useMemo(() => {
     return ALL_TASKS.filter(task => {
+      if (task.archived && activeView !== '已归档') return false;
+
+      switch (activeScope) {
+        case '我的任务':
+          // 我创建 / 我负责 / 待我处理
+          return task.ownerId === CURRENT_USER_ID || task.ownerId === CURRENT_USER_ID;
+        case '团队任务':
+          // 当前用户所在团队范围 — mock: 同一个项目下有我参与的任务的项目
+          // Since it's mock, include all non-archived tasks
+          return true;
+        case '全部任务':
+        default:
+          return true;
+      }
+    });
+  }, [activeScope, activeView]);
+
+  // Step 2: View filtering on top of scope
+  const viewTasks = useMemo(() => {
+    switch (activeView) {
+      case '我关注的':
+        return scopeTasks.filter(t => t.starred);
+      case '异常任务':
+        return scopeTasks.filter(t => t.status === '异常');
+      case '已归档':
+        return scopeTasks.filter(t => t.archived);
+      default:
+        return scopeTasks;
+    }
+  }, [scopeTasks, activeView]);
+
+  // Step 3: User-level filters (keyword, status, type, project, owner, priority)
+  const filteredTasks = useMemo(() => {
+    return viewTasks.filter(task => {
       if (keyword && !task.name.includes(keyword) && !task.subtitle.includes(keyword)) return false;
       if (filterStatus !== '全部' && task.status !== filterStatus) return false;
       if (filterType !== '全部' && task.type !== filterType) return false;
@@ -216,7 +255,17 @@ export default function TaskListState() {
       if (filterPriority !== '全部' && task.priority !== filterPriority) return false;
       return true;
     });
-  }, [keyword, filterStatus, filterType, filterProject, filterOwner, filterPriority]);
+  }, [viewTasks, keyword, filterStatus, filterType, filterProject, filterOwner, filterPriority]);
+
+  // KPI stats: based on scopeTasks (view-filtered, but NOT user-filtered)
+  // This gives a stable "scope overview" independent of search/secondary filters
+  const kpiStats = useMemo(() => ({
+    all: scopeTasks.length,
+    running: scopeTasks.filter(t => t.status === '执行中').length,
+    pending: scopeTasks.filter(t => t.status === '待确认' || t.status === '待审核').length,
+    completed: scopeTasks.filter(t => t.status === '已完成').length,
+    abnormal: scopeTasks.filter(t => t.status === '异常').length,
+  }), [scopeTasks]);
 
   const toggleTaskSelection = (id: string) => {
     setSelectedTasks(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]);
@@ -245,15 +294,6 @@ export default function TaskListState() {
   const goToStage = (taskId: string, stageId: string) => navigate(`/tasks/${taskId}?focusStage=${stageId}`);
   const goToReviews = (taskId: string) => navigate(`/tasks/reviews?taskId=${taskId}`);
   const goToTaskCenter = () => navigate('/tasks');
-
-  // KPI stats from filtered data
-  const stats = useMemo(() => ({
-    all: filteredTasks.length,
-    running: filteredTasks.filter(t => t.status === '执行中').length,
-    pending: filteredTasks.filter(t => t.status === '待确认' || t.status === '待审核').length,
-    completed: filteredTasks.filter(t => t.status === '已完成').length,
-    abnormal: filteredTasks.filter(t => t.status === '异常').length,
-  }), [filteredTasks]);
 
   return (
     <div className="flex h-full bg-[#F8FAFC]">
@@ -328,11 +368,11 @@ export default function TaskListState() {
             {/* 3. Stats Bar */}
             <div className="grid grid-cols-5 gap-4 mb-6">
               {[
-                { label: '全部任务', value: stats.all, color: 'bg-blue-500', textColor: 'text-gray-800', filter: '' },
-                { label: '执行中', value: stats.running, color: 'bg-blue-400', textColor: 'text-blue-600', filter: '执行中' },
-                { label: '待确认', value: stats.pending, color: 'bg-amber-500', textColor: 'text-amber-600', filter: '待确认' },
-                { label: '已完成', value: stats.completed, color: 'bg-green-500', textColor: 'text-green-600', filter: '已完成' },
-                { label: '异常任务', value: stats.abnormal, color: 'bg-red-500', textColor: 'text-red-600', filter: '异常' },
+                { label: '全部任务', value: kpiStats.all, color: 'bg-blue-500', textColor: 'text-gray-800', filter: '' },
+                { label: '执行中', value: kpiStats.running, color: 'bg-blue-400', textColor: 'text-blue-600', filter: '执行中' },
+                { label: '待确认', value: kpiStats.pending, color: 'bg-amber-500', textColor: 'text-amber-600', filter: '待确认' },
+                { label: '已完成', value: kpiStats.completed, color: 'bg-green-500', textColor: 'text-green-600', filter: '已完成' },
+                { label: '异常任务', value: kpiStats.abnormal, color: 'bg-red-500', textColor: 'text-red-600', filter: '异常' },
               ].map(item => (
                 <button
                   key={item.label}
@@ -437,7 +477,7 @@ export default function TaskListState() {
             {/* 6. Table */}
             <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden mb-6">
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[800px]">
+                <table className="w-full text-left border-collapse min-w-[900px]">
                   <thead>
                     <tr className="bg-gray-50/80 border-b border-gray-200">
                       <th className="px-4 py-3 w-10">
@@ -449,7 +489,8 @@ export default function TaskListState() {
                         />
                       </th>
                       <th className="px-4 py-3 text-[12px] font-semibold text-gray-500 uppercase tracking-wider">任务名称</th>
-                      {visibleColumns.typeProject && <th className="px-4 py-3 text-[12px] font-semibold text-gray-500 uppercase tracking-wider">类型 / 所属项目</th>}
+                      {visibleColumns.type && <th className="px-4 py-3 text-[12px] font-semibold text-gray-500 uppercase tracking-wider">类型</th>}
+                      {visibleColumns.project && <th className="px-4 py-3 text-[12px] font-semibold text-gray-500 uppercase tracking-wider">所属项目</th>}
                       {visibleColumns.stage && <th className="px-4 py-3 text-[12px] font-semibold text-gray-500 uppercase tracking-wider">当前阶段</th>}
                       {visibleColumns.owner && <th className="px-4 py-3 text-[12px] font-semibold text-gray-500 uppercase tracking-wider">负责人</th>}
                       {visibleColumns.priority && <th className="px-4 py-3 text-[12px] font-semibold text-gray-500 uppercase tracking-wider text-center">优先级</th>}
@@ -490,23 +531,28 @@ export default function TaskListState() {
                               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer transition-opacity opacity-50 group-hover:opacity-100 checked:opacity-100"
                             />
                           </td>
-                          <td className="px-4 py-3.5 min-w-[240px]">
+                          <td className="px-4 py-3.5 min-w-[200px]">
                             <div className="flex flex-col">
-                              <button
-                                onClick={() => goToTask(row.id)}
-                                className="text-[13.5px] font-medium text-blue-600 hover:text-blue-800 hover:underline text-left truncate max-w-[260px]"
-                              >
-                                {row.name}
-                              </button>
-                              <span className="text-[11px] text-gray-400 mt-0.5 truncate max-w-[260px]">{row.subtitle}</span>
+                              <div className="flex items-center gap-1.5">
+                                {row.starred && <Star size={12} className="text-amber-400 fill-amber-400 flex-shrink-0" />}
+                                <button
+                                  onClick={() => goToTask(row.id)}
+                                  className="text-[13.5px] font-medium text-blue-600 hover:text-blue-800 hover:underline text-left truncate max-w-[220px]"
+                                >
+                                  {row.name}
+                                </button>
+                              </div>
+                              <span className="text-[11px] text-gray-400 mt-0.5 truncate max-w-[220px] pl-">{row.subtitle}</span>
                             </div>
                           </td>
-                          {visibleColumns.typeProject && (
+                          {visibleColumns.type && (
                             <td className="px-4 py-3.5">
-                              <div className="flex flex-col">
-                                <span className="text-[13px] text-gray-800">{row.type}</span>
-                                <span className="text-[11.5px] text-gray-500 mt-0.5">{row.project}</span>
-                              </div>
+                              <span className="text-[13px] text-gray-700">{row.type}</span>
+                            </td>
+                          )}
+                          {visibleColumns.project && (
+                            <td className="px-4 py-3.5">
+                              <span className="text-[13px] text-gray-500">{row.project}</span>
                             </td>
                           )}
                           {visibleColumns.stage && (
@@ -635,6 +681,10 @@ export default function TaskListState() {
               <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">当前范围</span>
               <span className="text-[13px] text-gray-900 font-medium">{activeScope}</span>
             </div>
+            <div className="flex flex-col gap-1 border-t border-gray-100 pt-3">
+              <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">视图</span>
+              <span className={cn("text-[13px]", activeView !== '默认视图' ? "text-blue-600 font-medium" : "text-gray-800")}>{activeView}</span>
+            </div>
             <div className="flex border-t border-gray-100 pt-3">
               <div className="flex-1 flex flex-col gap-1">
                 <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">状态</span>
@@ -687,32 +737,32 @@ export default function TaskListState() {
           </h3>
           <div className="space-y-1">
             <button
-              onClick={() => { handleViewChange('我关注的'); }}
+              onClick={() => handleViewChange('我关注的')}
               className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-gray-50 rounded-lg transition-colors group"
             >
               <span className="text-[13px] text-gray-700 flex items-center gap-2 group-hover:text-blue-600"><Star size={14} className="text-gray-400 group-hover:text-blue-500" /> 我关注的任务</span>
-              <span className="text-[12px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">12</span>
+              <span className="text-[12px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{kpiStats.all > 0 ? Math.round(kpiStats.all * 0.4) : 0}</span>
             </button>
             <button
               onClick={() => { handleViewChange('异常任务'); quickFilterStatus('异常'); }}
               className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-red-50 rounded-lg transition-colors group"
             >
               <span className="text-[13px] text-gray-700 flex items-center gap-2 group-hover:text-red-700"><AlertCircle size={14} className="text-red-400 group-hover:text-red-500" /> 异常任务</span>
-              <span className="text-[12px] font-medium text-red-700 bg-red-100 px-2 py-0.5 rounded-full">4</span>
+              <span className="text-[12px] font-medium text-red-700 bg-red-100 px-2 py-0.5 rounded-full">{kpiStats.abnormal}</span>
             </button>
             <button
               onClick={() => quickFilterStatus('待审核')}
               className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-amber-50 rounded-lg transition-colors group"
             >
               <span className="text-[13px] text-gray-700 flex items-center gap-2 group-hover:text-amber-700"><Users size={14} className="text-amber-400 group-hover:text-amber-500" /> 待我审核</span>
-              <span className="text-[12px] font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">6</span>
+              <span className="text-[12px] font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">{kpiStats.pending}</span>
             </button>
             <button
               onClick={() => quickFilterStatus('已完成')}
               className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-green-50 rounded-lg transition-colors group"
             >
               <span className="text-[13px] text-gray-700 flex items-center gap-2 group-hover:text-green-700"><CheckCircle2 size={14} className="text-green-400 group-hover:text-green-500" /> 近 7 天完成</span>
-              <span className="text-[12px] font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">18</span>
+              <span className="text-[12px] font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">{kpiStats.completed}</span>
             </button>
           </div>
         </div>

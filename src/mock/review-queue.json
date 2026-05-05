@@ -1,0 +1,14 @@
+{
+  "reviews": [
+    { "id": "rev-1", "taskId": "task-supply-chain-loop", "taskName": "供应链语义治理闭环任务", "type": "FIELD_CONFIRMATION", "typeLabel": "字段冲突确认", "status": "PENDING", "priority": "HIGH", "assignee": "u-litong", "assigneeName": "李桐", "count": 41, "createdAt": "2025-05-16T09:32:00Z", "updatedAt": "2025-05-16T10:15:00Z" },
+    { "id": "rev-2", "taskId": "task-supply-chain-loop", "taskName": "供应链语义治理闭环任务", "type": "ABNORMAL", "typeLabel": "异常字段审核", "status": "PENDING", "priority": "MEDIUM", "assignee": "u-litong", "assigneeName": "李桐", "count": 37, "createdAt": "2025-05-16T09:32:00Z", "updatedAt": "2025-05-16T09:50:00Z" },
+    { "id": "rev-3", "taskId": "task-customer", "taskName": "客户语义治理任务", "type": "FIELD_CONFIRMATION", "typeLabel": "对象关系确认", "status": "PENDING", "priority": "MEDIUM", "assignee": "u-chenchen", "assigneeName": "陈晨", "count": 5, "createdAt": "2025-05-16T08:35:00Z", "updatedAt": "2025-05-16T08:40:00Z" },
+    { "id": "rev-4", "taskId": "task-standard", "taskName": "数据标准落地任务", "type": "REVIEW", "typeLabel": "标准映射审核", "status": "PENDING", "priority": "LOW", "assignee": "u-zhangyue", "assigneeName": "张悦", "count": 12, "createdAt": "2025-05-16T09:20:00Z", "updatedAt": "2025-05-16T09:35:00Z" },
+    { "id": "rev-5", "taskId": "task-purchase", "taskName": "采购主数据修复任务", "type": "CONTINUE", "typeLabel": "字段语义继续执行", "status": "PENDING", "priority": "HIGH", "assignee": "u-sunhao", "assigneeName": "孙浩", "count": 8, "createdAt": "2025-05-16T10:00:00Z", "updatedAt": "2025-05-16T10:05:00Z" },
+    { "id": "rev-6", "taskId": "task-supply-chain-loop", "taskName": "供应链语义治理闭环任务", "type": "REVIEW", "typeLabel": "业务对象审核", "status": "RESOLVED", "priority": "MEDIUM", "assignee": "u-litong", "assigneeName": "李桐", "count": 21, "createdAt": "2025-05-15T14:00:00Z", "updatedAt": "2025-05-16T08:30:00Z" },
+    { "id": "rev-7", "taskId": "task-customer", "taskName": "客户语义治理任务", "type": "ABNORMAL", "typeLabel": "异常字段处理", "status": "PENDING", "priority": "HIGH", "assignee": "u-chenchen", "assigneeName": "陈晨", "count": 15, "createdAt": "2025-05-16T08:20:00Z", "updatedAt": "2025-05-16T08:40:00Z" }
+  ],
+  "typeOptions": ["全部", "待确认", "待审核", "异常", "继续执行"],
+  "statusOptions": ["全部", "待处理", "已处理"],
+  "priorityOptions": ["全部", "高", "中", "低"]
+}

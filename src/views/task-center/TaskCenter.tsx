@@ -47,7 +47,6 @@ const TYPE_COLOR: Record<string, string> = mockData.typeColor as Record<string, 
 
 const colorMap: Record<string, { bg: string; text: string; iconBg: string }> = {
   blue: { bg: 'bg-blue-50', text: 'text-blue-700', iconBg: 'bg-blue-100' },
-  emerald: { bg: 'bg-emerald-50', text: 'text-emerald-700', iconBg: 'bg-emerald-100' },
   orange: { bg: 'bg-orange-50', text: 'text-orange-700', iconBg: 'bg-orange-100' },
   green: { bg: 'bg-green-50', text: 'text-green-700', iconBg: 'bg-green-100' },
   red: { bg: 'bg-red-50', text: 'text-red-700', iconBg: 'bg-red-100' },
@@ -232,7 +231,7 @@ export default function TaskCenter() {
                         <div className="flex items-center gap-3">
                           <span className={cn(
                             'w-2 h-2 rounded-full flex-shrink-0',
-                            action.type === '冲突' ? 'bg-red-500' : action.type === '异常' ? 'bg-orange-500' : action.type === '审核' ? 'bg-purple-500' : action.type === '继续' ? 'bg-blue-500' : 'bg-blue-500'
+                            action.type === '冲突' ? 'bg-red-500' : action.type === '异常' ? 'bg-red-400' : action.type === '审核' ? 'bg-orange-500' : action.type === '继续' ? 'bg-blue-500' : 'bg-orange-500'
                           )} />
                           <span className="text-[14px] text-gray-700 font-medium">{action.label}</span>
                         </div>
@@ -288,7 +287,7 @@ export default function TaskCenter() {
                 >
                   <div className={cn(
                     "w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0",
-                    item.color === 'blue' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'
+                    item.color === 'blue' ? 'bg-blue-50 text-blue-600' : 'bg-blue-50 text-blue-600'
                   )}>
                     <Zap size={18} />
                   </div>

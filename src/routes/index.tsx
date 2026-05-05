@@ -6,6 +6,7 @@ import ExecutionState from '@/views/execution/ExecutionState';
 import DataQueryState from '@/views/data-query/DataQueryState';
 import TaskListState from '@/views/task-list/TaskListState';
 import TaskCenter from '@/views/task-center/TaskCenter';
+import ReviewQueue from '@/views/review-queue/ReviewQueue';
 import ReviewDetail from '@/views/review/ReviewDetail';
 import CompletedTask from '@/views/completed/CompletedTask';
 
@@ -27,6 +28,9 @@ export default function AppRoutes() {
 
         {/* 全部任务列表 */}
         <Route path="/tasks/all" element={<TaskListState />} />
+
+        {/* 待处理事项列表 */}
+        <Route path="/tasks/reviews" element={<ReviewQueue />} />
 
         {/* 任务执行页（动态 taskId） */}
         <Route path="/tasks/:taskId" element={<ExecutionState />} />

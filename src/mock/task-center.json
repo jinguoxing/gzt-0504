@@ -8,21 +8,21 @@
   "kpiData": {
     "my": [
       { "label": "全部任务", "value": 24, "color": "blue", "link": "/tasks/all?scope=my" },
-      { "label": "执行中", "value": 6, "color": "emerald", "link": "/tasks/all?scope=my&status=RUNNING" },
+      { "label": "执行中", "value": 6, "color": "blue", "link": "/tasks/all?scope=my&status=RUNNING" },
       { "label": "待我处理", "value": 3, "color": "orange", "link": "/tasks/reviews?assignee=me&status=PENDING" },
       { "label": "已完成", "value": 12, "color": "green", "link": "/tasks/all?scope=my&status=COMPLETED" },
       { "label": "异常", "value": 2, "color": "red", "link": "/tasks/all?scope=my&status=BLOCKED" }
     ],
     "team": [
       { "label": "全部任务", "value": 58, "color": "blue", "link": "/tasks/all?scope=team" },
-      { "label": "执行中", "value": 14, "color": "emerald", "link": "/tasks/all?scope=team&status=RUNNING" },
+      { "label": "执行中", "value": 14, "color": "blue", "link": "/tasks/all?scope=team&status=RUNNING" },
       { "label": "待处理", "value": 9, "color": "orange", "link": "/tasks/reviews?scope=team&status=PENDING" },
       { "label": "已完成", "value": 31, "color": "green", "link": "/tasks/all?scope=team&status=COMPLETED" },
       { "label": "异常", "value": 4, "color": "red", "link": "/tasks/all?scope=team&status=BLOCKED" }
     ],
     "all": [
       { "label": "全部任务", "value": 128, "color": "blue", "link": "/tasks/all?scope=all" },
-      { "label": "执行中", "value": 36, "color": "emerald", "link": "/tasks/all?scope=all&status=RUNNING" },
+      { "label": "执行中", "value": 36, "color": "blue", "link": "/tasks/all?scope=all&status=RUNNING" },
       { "label": "待处理", "value": 17, "color": "orange", "link": "/tasks/reviews?status=PENDING" },
       { "label": "已完成", "value": 75, "color": "green", "link": "/tasks/all?scope=all&status=COMPLETED" },
       { "label": "异常", "value": 4, "color": "red", "link": "/tasks/all?scope=all&status=BLOCKED" }
@@ -94,12 +94,12 @@
   ],
   "quickStarts": [
     { "label": "语义治理", "desc": "扫描 Schema，理解字段语义，生成业务对象", "path": "/workbench", "color": "blue" },
-    { "label": "找数问数", "desc": "自然语言查询业务数据", "path": "/ai-workbench/data-qa/dqa_001", "color": "emerald" }
+    { "label": "找数问数", "desc": "自然语言查询业务数据", "path": "/ai-workbench/data-qa/dqa_001", "color": "blue" }
   ],
   "typeColor": {
     "语义治理": "bg-blue-50 text-blue-700",
-    "标准管理": "bg-purple-50 text-purple-700",
-    "主数据": "bg-emerald-50 text-emerald-700",
+    "标准管理": "bg-amber-50 text-amber-700",
+    "主数据": "bg-gray-100 text-gray-700",
     "元数据": "bg-amber-50 text-amber-700",
     "质量巡检": "bg-gray-100 text-gray-700"
   }
