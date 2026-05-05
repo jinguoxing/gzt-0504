@@ -3,11 +3,15 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Paperclip, AtSign, Mic, History, Send, ChevronRight, Database, BarChart3,
   Sparkles, User, X, FileText, ChevronDown, Check, Clock, Settings2, RotateCw, Loader2,
+  Plus, Trash2, Save,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import mockData from '@/mock/workbench-home.json';
 import draftMockData from '@/mock/task-draft.json';
 import { formatTime } from '@/mock/helpers';
+
+/** Editable section keys for inline editing */
+type EditableSection = 'understanding' | 'dataSource' | 'scanScope' | 'resources' | 'deliverables';
 
 type WorkbenchState = 'empty' | 'parsing' | 'draft';
 
@@ -131,6 +135,36 @@ export default function Home() {
   const [highlightedKey, setHighlightedKey] = useState('');
   const [draftScopeChanged, setDraftScopeChanged] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Inline editing state
+  const [editingKey, setEditingKey] = useState<EditableSection | null>(null);
+  const [saveToast, setSaveToast] = useState(false);
+
+  // Mutable draft state — initialized from mock, updated by inline edits
+  const [draftState, setDraftState] = useState({
+    name: draftMockData.draft.name,
+    objective: draftMockData.draft.objective,
+    dataSourceId: draftMockData.draft.dataSource.id,
+    scanScopeSchemas: [...draftMockData.draft.scanScope.schemas],
+    isFullScan: false,
+    contextResources: [...draftMockData.draft.contextResources],
+    deliverableRequirements: [...draftMockData.draft.deliverableRequirements],
+  });
+
+  // Edit buffer — holds temp values while editing
+  const [editBuffer, setEditBuffer] = useState<{
+    name: string;
+    objective: string;
+    dataSourceId: string;
+    scanScopeSchemas: string[];
+    isFullScan: boolean;
+    contextResources: typeof draftMockData.draft.contextResources;
+    deliverableRequirements: string[];
+  } | null>(null);
+
+  /** Resolve data source object by id */
+  const resolveDataSource = (id: string) =>
+    draftMockData.availableDataSources.find(ds => ds.id === id) || draftMockData.availableDataSources[0];
 
   const draftId = searchParams.get('draftId');
   const workbenchState: WorkbenchState = draftId ? 'draft' : 'empty';
@@ -266,6 +300,71 @@ export default function Home() {
     navigate('/tasks/task-supply-chain-loop');
   };
 
+  /** Open inline editor for a section */
+  const handleStartEdit = (key: EditableSection) => {
+    setEditBuffer({
+      name: draftState.name,
+      objective: draftState.objective,
+      dataSourceId: draftState.dataSourceId,
+      scanScopeSchemas: [...draftState.scanScopeSchemas],
+      isFullScan: draftState.isFullScan,
+      contextResources: [...draftState.contextResources],
+      deliverableRequirements: [...draftState.deliverableRequirements],
+    });
+    setEditingKey(key);
+  };
+
+  /** Save inline edit: apply changes, close editor, highlight, append Xino message */
+  const handleSaveEdit = (sectionKey: EditableSection, changeTitle: string, changes: { field: string; from: string; to: string }[]) => {
+    if (!editBuffer) return;
+
+    // Apply changes to draftState
+    setDraftState(prev => ({
+      ...prev,
+      name: editBuffer.name,
+      objective: editBuffer.objective,
+      dataSourceId: editBuffer.dataSourceId,
+      scanScopeSchemas: editBuffer.scanScopeSchemas,
+      isFullScan: editBuffer.isFullScan,
+      contextResources: editBuffer.contextResources,
+      deliverableRequirements: editBuffer.deliverableRequirements,
+    }));
+
+    // Close editor
+    setEditingKey(null);
+    setEditBuffer(null);
+
+    // Highlight the section
+    setHighlightedKey(sectionKey);
+
+    // Track scope changes for display
+    if (sectionKey === 'scanScope') {
+      setDraftScopeChanged(true);
+    }
+
+    // Append Xino change message to conversation
+    const xinoMsg: DraftMessage = {
+      id: `msg-xino-edit-${Date.now()}`,
+      role: 'xino',
+      content: `已更新任务草稿。${changes.map(c => `${c.field}：${c.from} → ${c.to}`).join('，')}。`,
+      createdAt: new Date().toISOString(),
+      changeSummary: { title: changeTitle, changes },
+    };
+    setMessages(prev => [...prev, xinoMsg]);
+  };
+
+  /** Cancel inline edit */
+  const handleCancelEdit = () => {
+    setEditingKey(null);
+    setEditBuffer(null);
+  };
+
+  /** Save draft with toast */
+  const handleSaveDraft = () => {
+    setSaveToast(true);
+    setTimeout(() => setSaveToast(false), 2000);
+  };
+
   // ========================
   // Empty State (首页空白态)
   // ========================
@@ -398,13 +497,17 @@ export default function Home() {
   // ========================
   const draft = draftMockData.draft;
 
-  // Determine display values based on whether scope was changed via conversation
-  const scopeDisplay = draftScopeChanged
-    ? { label: draft.scanScope.schemas.join(', '), count: `${draft.scanScope.schemas.length} 个 Schema` }
-    : { label: '全库 (286 个 Schema)', count: '无限制' };
-  const estimatedTables = draftScopeChanged ? draft.scanScope.estimatedTables : '286';
-  const estimatedFields = draftScopeChanged ? draft.scanScope.estimatedFields : '9,820';
-  const estimatedHours = draftScopeChanged ? '1.4' : '2.5';
+  // Determine display values based on draftState
+  const scopeDisplay = draftState.isFullScan
+    ? { label: '全库', count: '无限制' }
+    : draftState.scanScopeSchemas.length > 0
+      ? { label: draftState.scanScopeSchemas.join(', '), count: `${draftState.scanScopeSchemas.length} 个 Schema` }
+      : draftScopeChanged
+        ? { label: draft.scanScope.schemas.join(', '), count: `${draft.scanScope.schemas.length} 个 Schema` }
+        : { label: '全库 (286 个 Schema)', count: '无限制' };
+  const estimatedTables = draftState.isFullScan ? '286' : draftScopeChanged ? draft.scanScope.estimatedTables : '286';
+  const estimatedFields = draftState.isFullScan ? '9,820' : draftScopeChanged ? draft.scanScope.estimatedFields : '9,820';
+  const estimatedHours = draftState.isFullScan ? '2.5' : draftScopeChanged ? '1.4' : '2.5';
 
   // Count user messages to know if any adjustments happened
   const hasAdjustments = messages.filter(m => m.role === 'user').length > 1;
@@ -593,18 +696,69 @@ export default function Home() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-[14px] font-semibold text-gray-900">任务理解</h4>
-                <button className="text-[13px] text-blue-600 hover:text-blue-700 font-medium">编辑</button>
+                {editingKey !== 'understanding' ? (
+                  <button
+                    onClick={() => handleStartEdit('understanding')}
+                    className="text-[13px] text-blue-600 hover:text-blue-700 font-medium"
+                  >编辑</button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleCancelEdit}
+                      className="text-[13px] text-gray-500 hover:text-gray-700 font-medium"
+                    >取消</button>
+                    <button
+                      onClick={() => {
+                        if (!editBuffer) return;
+                        const changes: { field: string; from: string; to: string }[] = [];
+                        if (editBuffer.name !== draftState.name) changes.push({ field: '任务名称', from: draftState.name, to: editBuffer.name });
+                        if (editBuffer.objective !== draftState.objective) changes.push({ field: '任务目标', from: draftState.objective, to: editBuffer.objective });
+                        if (changes.length === 0) { handleCancelEdit(); return; }
+                        handleSaveEdit('understanding', '已更新任务理解', changes);
+                      }}
+                      className="text-[13px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                    ><Save size={13}/> 保存</button>
+                  </div>
+                )}
               </div>
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                <div className="text-[14px] font-semibold text-gray-900 mb-1">{draft.name}</div>
-                <p className="text-[13px] text-gray-600 leading-relaxed mb-3">{draft.objective}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {draft.typeTags.map(tag => (
-                    <span key={tag} className="px-2 py-1 rounded-md bg-white border border-gray-200 text-[12px] text-gray-600">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+              <div className={cn(
+                "rounded-xl p-4 border transition-all",
+                highlightedKey === 'understanding' ? "bg-blue-50/50 border-2 border-blue-300" : "bg-gray-50 border border-gray-100"
+              )}>
+                {editingKey === 'understanding' && editBuffer ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-[12px] font-medium text-gray-700 block mb-1">任务名称</label>
+                      <input
+                        type="text"
+                        value={editBuffer.name}
+                        onChange={e => setEditBuffer({ ...editBuffer, name: e.target.value })}
+                        className="w-full text-[14px] border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[12px] font-medium text-gray-700 block mb-1">任务目标</label>
+                      <textarea
+                        value={editBuffer.objective}
+                        onChange={e => setEditBuffer({ ...editBuffer, objective: e.target.value })}
+                        rows={3}
+                        className="w-full text-[13px] border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 bg-white resize-none"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-[14px] font-semibold text-gray-900 mb-1">{draftState.name}</div>
+                    <p className="text-[13px] text-gray-600 leading-relaxed mb-3">{draftState.objective}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {draft.typeTags.map(tag => (
+                        <span key={tag} className="px-2 py-1 rounded-md bg-white border border-gray-200 text-[12px] text-gray-600">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -614,103 +768,391 @@ export default function Home() {
               <div className="space-y-3">
                 {/* Data Source */}
                 <div className={cn(
-                  "flex items-start justify-between rounded-xl p-4 transition-all",
+                  "rounded-xl p-4 transition-all",
                   highlightedKey === 'dataSource' ? "bg-blue-50/50 border-2 border-blue-300" : "bg-white border border-gray-200 hover:border-blue-200"
                 )}>
-                  <div>
-                    <div className="text-[12px] font-medium text-gray-500 mb-1">数据源</div>
-                    <div className="text-[14px] font-semibold text-gray-900">{draft.dataSource.name}</div>
-                    <div className="text-[12px] text-gray-500 mt-1">{draft.dataSource.type} · {draft.dataSource.host}:{draft.dataSource.port}</div>
-                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[12px] bg-green-50 text-green-700 mt-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                      已连接
+                  {editingKey === 'dataSource' && editBuffer ? (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-[12px] font-medium text-gray-500">选择数据源</span>
+                        <div className="flex items-center gap-2">
+                          <button onClick={handleCancelEdit} className="text-[13px] text-gray-500 hover:text-gray-700 font-medium">取消</button>
+                          <button
+                            onClick={() => {
+                              if (!editBuffer) return;
+                              const oldDs = resolveDataSource(draftState.dataSourceId);
+                              const newDs = resolveDataSource(editBuffer.dataSourceId);
+                              if (editBuffer.dataSourceId === draftState.dataSourceId) { handleCancelEdit(); return; }
+                              handleSaveEdit('dataSource', '已更新数据源', [
+                                { field: '数据源', from: oldDs.name, to: newDs.name },
+                                { field: '数据库类型', from: oldDs.type, to: newDs.type },
+                                { field: '连接地址', from: `${oldDs.host}:${oldDs.port}`, to: `${newDs.host}:${newDs.port}` },
+                              ]);
+                            }}
+                            className="text-[13px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                          ><Save size={13}/> 保存</button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        {draftMockData.availableDataSources.map(ds => (
+                          <label
+                            key={ds.id}
+                            className={cn(
+                              "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all",
+                              editBuffer.dataSourceId === ds.id ? "border-blue-400 bg-blue-50/40" : "border-gray-200 hover:border-blue-200 bg-white"
+                            )}
+                          >
+                            <input
+                              type="radio"
+                              name="dataSource"
+                              checked={editBuffer.dataSourceId === ds.id}
+                              onChange={() => setEditBuffer({ ...editBuffer, dataSourceId: ds.id })}
+                              className="accent-blue-600"
+                            />
+                            <div className="flex-1">
+                              <div className="text-[14px] font-semibold text-gray-900">{ds.name}</div>
+                              <div className="text-[12px] text-gray-500">{ds.type} · {ds.host}:{ds.port}</div>
+                            </div>
+                            <div className={cn(
+                              "text-[12px] px-2 py-0.5 rounded",
+                              ds.status === 'CONNECTED' ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"
+                            )}>
+                              {ds.status === 'CONNECTED' ? '已连接' : '未连接'}
+                            </div>
+                          </label>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <button className="text-[13px] text-blue-600 hover:text-blue-700 font-medium">更换</button>
+                  ) : (
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="text-[12px] font-medium text-gray-500 mb-1">数据源</div>
+                        {(() => {
+                          const ds = resolveDataSource(draftState.dataSourceId);
+                          return (
+                            <>
+                              <div className="text-[14px] font-semibold text-gray-900">{ds.name}</div>
+                              <div className="text-[12px] text-gray-500 mt-1">{ds.type} · {ds.host}:{ds.port}</div>
+                              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[12px] bg-green-50 text-green-700 mt-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                已连接
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </div>
+                      <button
+                        onClick={() => handleStartEdit('dataSource')}
+                        className="text-[13px] text-blue-600 hover:text-blue-700 font-medium"
+                      >更换</button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Scan Scope */}
                 <div className={cn(
-                  "flex items-start justify-between rounded-xl p-4 transition-all",
+                  "rounded-xl p-4 transition-all",
                   highlightedKey === 'scanScope' ? "bg-blue-50/50 border-2 border-blue-300" : "bg-white border border-gray-200 hover:border-blue-200"
                 )}>
-                  <div>
-                    <div className={cn(
-                      "text-[12px] font-medium mb-1 flex items-center gap-2",
-                      highlightedKey === 'scanScope' ? "text-blue-600" : "text-gray-500"
-                    )}>
-                      扫描范围
-                      {highlightedKey === 'scanScope' && (
-                        <span className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded font-medium animate-in fade-in zoom-in duration-200">
-                          刚刚通过对话更新
-                        </span>
+                  {editingKey === 'scanScope' && editBuffer ? (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-[12px] font-medium text-gray-500">编辑扫描范围</span>
+                        <div className="flex items-center gap-2">
+                          <button onClick={handleCancelEdit} className="text-[13px] text-gray-500 hover:text-gray-700 font-medium">取消</button>
+                          <button
+                            onClick={() => {
+                              if (!editBuffer) return;
+                              const oldLabel = draftState.isFullScan ? '全库' : draftState.scanScopeSchemas.join(', ');
+                              const newLabel = editBuffer.isFullScan ? '全库' : editBuffer.scanScopeSchemas.join(', ');
+                              if (oldLabel === newLabel && editBuffer.isFullScan === draftState.isFullScan) { handleCancelEdit(); return; }
+                              handleSaveEdit('scanScope', '已更新扫描范围', [
+                                { field: '扫描范围', from: oldLabel || '无', to: newLabel || '无' },
+                              ]);
+                            }}
+                            className="text-[13px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                          ><Save size={13}/> 保存</button>
+                        </div>
+                      </div>
+                      <label className="flex items-center gap-2 mb-3 p-2 rounded-lg border border-gray-200 bg-gray-50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={editBuffer.isFullScan}
+                          onChange={e => setEditBuffer({ ...editBuffer, isFullScan: e.target.checked })}
+                          className="accent-blue-600"
+                        />
+                        <span className="text-[13px] font-medium text-gray-700">全库扫描</span>
+                      </label>
+                      {!editBuffer.isFullScan && (
+                        <div className="space-y-2">
+                          {draftMockData.availableSchemas.map(schema => (
+                            <label
+                              key={schema.id}
+                              className={cn(
+                                "flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all",
+                                editBuffer.scanScopeSchemas.includes(schema.id) ? "border-blue-400 bg-blue-50/40" : "border-gray-200 bg-white hover:border-blue-200"
+                              )}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={editBuffer.scanScopeSchemas.includes(schema.id)}
+                                onChange={e => {
+                                  const checked = e.target.checked;
+                                  setEditBuffer({
+                                    ...editBuffer,
+                                    scanScopeSchemas: checked
+                                      ? [...editBuffer.scanScopeSchemas, schema.id]
+                                      : editBuffer.scanScopeSchemas.filter(s => s !== schema.id),
+                                  });
+                                }}
+                                className="accent-blue-600"
+                              />
+                              <div className="flex-1">
+                                <span className="text-[13px] font-medium text-gray-900">{schema.name}</span>
+                                <span className="text-[12px] text-gray-500 ml-2">{schema.tableCount} 张表</span>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
                       )}
                     </div>
-                    <div className="text-[14px] font-semibold text-gray-900">
-                      {scopeDisplay.label}
+                  ) : (
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className={cn(
+                          "text-[12px] font-medium mb-1 flex items-center gap-2",
+                          highlightedKey === 'scanScope' ? "text-blue-600" : "text-gray-500"
+                        )}>
+                          扫描范围
+                          {highlightedKey === 'scanScope' && (
+                            <span className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded font-medium animate-in fade-in zoom-in duration-200">
+                              刚刚更新
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[14px] font-semibold text-gray-900">
+                          {draftState.isFullScan ? '全库' : draftState.scanScopeSchemas.join(', ') || '未选择'}
+                        </div>
+                        <div className="text-[12px] text-gray-500 mt-1">
+                          {draftState.isFullScan ? '无限制' : `${draftState.scanScopeSchemas.length} 个 Schema`}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleStartEdit('scanScope')}
+                        className="text-[13px] text-blue-600 hover:text-blue-700 font-medium"
+                      >编辑范围</button>
                     </div>
-                    <div className="text-[12px] text-gray-500 mt-1">
-                      {scopeDisplay.count}
-                    </div>
-                  </div>
-                  <button className="text-[13px] text-blue-600 hover:text-blue-700 font-medium">编辑范围</button>
+                  )}
                 </div>
 
                 {/* Context Resources */}
                 <div className={cn(
-                  "flex items-start justify-between rounded-xl p-4 transition-all",
+                  "rounded-xl p-4 transition-all",
                   highlightedKey === 'resources' ? "bg-blue-50/50 border-2 border-blue-300" : "bg-white border border-gray-200 hover:border-blue-200"
                 )}>
-                  <div>
-                    <div className={cn(
-                      "text-[12px] font-medium mb-1 flex items-center gap-2",
-                      highlightedKey === 'resources' ? "text-blue-600" : "text-gray-500"
-                    )}>
-                      上下文资源
-                      {highlightedKey === 'resources' && (
-                        <span className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded font-medium animate-in fade-in zoom-in duration-200">
-                          刚刚通过对话更新
-                        </span>
-                      )}
+                  {editingKey === 'resources' && editBuffer ? (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-[12px] font-medium text-gray-500">管理上下文资源</span>
+                        <div className="flex items-center gap-2">
+                          <button onClick={handleCancelEdit} className="text-[13px] text-gray-500 hover:text-gray-700 font-medium">取消</button>
+                          <button
+                            onClick={() => {
+                              if (!editBuffer) return;
+                              const oldCount = draftState.contextResources.length;
+                              const newCount = editBuffer.contextResources.length;
+                              if (oldCount === newCount) { handleCancelEdit(); return; }
+                              const addedNames = editBuffer.contextResources
+                                .filter(r => !draftState.contextResources.some(old => old.id === r.id))
+                                .map(r => r.name);
+                              const removedNames = draftState.contextResources
+                                .filter(r => !editBuffer.contextResources.some(cur => cur.id === r.id))
+                                .map(r => r.name);
+                              const changes: { field: string; from: string; to: string }[] = [];
+                              if (addedNames.length > 0) changes.push({ field: '新增资源', from: '—', to: addedNames.join(', ') });
+                              if (removedNames.length > 0) changes.push({ field: '移除资源', from: removedNames.join(', '), to: '—' });
+                              changes.push({ field: '资源总数', from: `${oldCount} 个`, to: `${newCount} 个` });
+                              handleSaveEdit('resources', '已更新上下文资源', changes);
+                            }}
+                            className="text-[13px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                          ><Save size={13}/> 保存</button>
+                        </div>
+                      </div>
+                      {/* Current resources with remove buttons */}
+                      <div className="space-y-2 mb-3">
+                        <div className="text-[12px] font-medium text-gray-500 mb-1">已添加（{editBuffer.contextResources.length}）</div>
+                        {editBuffer.contextResources.length === 0 && (
+                          <div className="text-[12px] text-gray-400 py-2">暂无资源</div>
+                        )}
+                        {editBuffer.contextResources.map(res => (
+                          <div key={res.id} className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 bg-white">
+                            <FileText size={14} className="text-gray-400 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[13px] text-gray-900 truncate">{res.name}</div>
+                              <div className="text-[11px] text-gray-400">{res.type}</div>
+                            </div>
+                            <button
+                              onClick={() => setEditBuffer({
+                                ...editBuffer,
+                                contextResources: editBuffer.contextResources.filter(r => r.id !== res.id),
+                              })}
+                              className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-red-500 rounded transition-colors"
+                            ><Trash2 size={14}/></button>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Available uploads to add */}
+                      {(() => {
+                        const available = draftMockData.availableUploads.filter(
+                          u => !editBuffer.contextResources.some(r => r.id === u.id)
+                        );
+                        if (available.length === 0) return null;
+                        return (
+                          <div className="space-y-2">
+                            <div className="text-[12px] font-medium text-gray-500 mb-1">可添加</div>
+                            {available.map(upload => (
+                              <div key={upload.id} className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 bg-gray-50">
+                                <FileText size={14} className="text-gray-400 flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-[13px] text-gray-700 truncate">{upload.name}</div>
+                                  <div className="text-[11px] text-gray-400">{upload.type}</div>
+                                </div>
+                                <button
+                                  onClick={() => setEditBuffer({
+                                    ...editBuffer,
+                                    contextResources: [...editBuffer.contextResources, {
+                                      id: upload.id,
+                                      name: upload.name,
+                                      type: upload.type,
+                                      sizeBytes: upload.sizeBytes,
+                                      uploadedBy: draftMockData.draft.contextResources[0]?.uploadedBy || { id: 'u-litong', name: '李桐', email: 'liming@semovix.com', avatarUrl: '/avatars/litong.png', role: 'owner' },
+                                      uploadedAt: new Date().toISOString(),
+                                    }],
+                                  })}
+                                  className="w-6 h-6 flex items-center justify-center text-blue-600 hover:text-blue-700 rounded transition-colors"
+                                ><Plus size={14}/></button>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
-                    <div className="text-[14px] font-semibold text-gray-900">
-                      {highlightedKey === 'resources' ? `${draft.contextResources.length + 1} 个文件` : `${draft.contextResources.length} 个文件`}
+                  ) : (
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className={cn(
+                          "text-[12px] font-medium mb-1 flex items-center gap-2",
+                          highlightedKey === 'resources' ? "text-blue-600" : "text-gray-500"
+                        )}>
+                          上下文资源
+                          {highlightedKey === 'resources' && (
+                            <span className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded font-medium animate-in fade-in zoom-in duration-200">
+                              刚刚更新
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[14px] font-semibold text-gray-900">
+                          {draftState.contextResources.length} 个文件
+                        </div>
+                        <div className="text-[12px] text-gray-500 mt-1 flex items-center gap-2">
+                          {draftState.contextResources.map(res => (
+                            <span key={res.id} className="flex items-center gap-1"><FileText size={12}/> {res.type}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleStartEdit('resources')}
+                        className="text-[13px] text-blue-600 hover:text-blue-700 font-medium"
+                      >继续上传</button>
                     </div>
-                    <div className="text-[12px] text-gray-500 mt-1 flex items-center gap-2">
-                      {draft.contextResources.map(res => (
-                        <span key={res.id} className="flex items-center gap-1"><FileText size={12}/> {res.type}</span>
-                      ))}
-                      {highlightedKey === 'resources' && (
-                        <span className="flex items-center gap-1 text-blue-600 font-medium animate-in fade-in duration-200"><FileText size={12}/> +XLSX</span>
-                      )}
-                    </div>
-                  </div>
-                  <button className="text-[13px] text-blue-600 hover:text-blue-700 font-medium">继续上传</button>
+                  )}
                 </div>
 
                 {/* Deliverables */}
                 <div className={cn(
-                  "flex items-start justify-between rounded-xl p-4 transition-all",
+                  "rounded-xl p-4 transition-all",
                   highlightedKey === 'deliverables' ? "bg-blue-50/50 border-2 border-blue-300" : "bg-white border border-gray-200 hover:border-blue-200"
                 )}>
-                  <div>
-                    <div className={cn(
-                      "text-[12px] font-medium mb-1 flex items-center gap-2",
-                      highlightedKey === 'deliverables' ? "text-blue-600" : "text-gray-500"
-                    )}>
-                      交付物
-                      {highlightedKey === 'deliverables' && (
-                        <span className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded font-medium animate-in fade-in zoom-in duration-200">
-                          刚刚通过对话更新
-                        </span>
-                      )}
+                  {editingKey === 'deliverables' && editBuffer ? (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-[12px] font-medium text-gray-500">调整交付物</span>
+                        <div className="flex items-center gap-2">
+                          <button onClick={handleCancelEdit} className="text-[13px] text-gray-500 hover:text-gray-700 font-medium">取消</button>
+                          <button
+                            onClick={() => {
+                              if (!editBuffer) return;
+                              const oldItems = draftState.deliverableRequirements;
+                              const newItems = editBuffer.deliverableRequirements;
+                              const added = newItems.filter(i => !oldItems.includes(i));
+                              const removed = oldItems.filter(i => !newItems.includes(i));
+                              if (added.length === 0 && removed.length === 0) { handleCancelEdit(); return; }
+                              const changes: { field: string; from: string; to: string }[] = [];
+                              if (added.length > 0) changes.push({ field: '新增交付物', from: '—', to: added.join(', ') });
+                              if (removed.length > 0) changes.push({ field: '移除交付物', from: removed.join(', '), to: '—' });
+                              changes.push({ field: '交付物总数', from: `${oldItems.length} 项`, to: `${newItems.length} 项` });
+                              handleSaveEdit('deliverables', '已更新交付物配置', changes);
+                            }}
+                            className="text-[13px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                          ><Save size={13}/> 保存</button>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        {draftMockData.availableDeliverables.map(item => (
+                          <label
+                            key={item}
+                            className={cn(
+                              "flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all",
+                              editBuffer.deliverableRequirements.includes(item) ? "border-blue-400 bg-blue-50/40" : "border-gray-200 bg-white hover:border-blue-200"
+                            )}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={editBuffer.deliverableRequirements.includes(item)}
+                              onChange={e => {
+                                const checked = e.target.checked;
+                                setEditBuffer({
+                                  ...editBuffer,
+                                  deliverableRequirements: checked
+                                    ? [...editBuffer.deliverableRequirements, item]
+                                    : editBuffer.deliverableRequirements.filter(d => d !== item),
+                                });
+                              }}
+                              className="accent-blue-600"
+                            />
+                            <span className="text-[13px] text-gray-900">{item}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
-                    <div className="text-[14px] font-semibold text-gray-900">
-                      {highlightedKey === 'deliverables' ? `${draft.deliverableRequirements.length + 1} 项` : `${draft.deliverableRequirements.length} 项`}
+                  ) : (
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className={cn(
+                          "text-[12px] font-medium mb-1 flex items-center gap-2",
+                          highlightedKey === 'deliverables' ? "text-blue-600" : "text-gray-500"
+                        )}>
+                          交付物
+                          {highlightedKey === 'deliverables' && (
+                            <span className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded font-medium animate-in fade-in zoom-in duration-200">
+                              刚刚更新
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[14px] font-semibold text-gray-900">
+                          {draftState.deliverableRequirements.length} 项
+                        </div>
+                        <div className="text-[12px] text-gray-500 mt-1">
+                          {draftState.deliverableRequirements.slice(0, 4).join('、')}
+                          {draftState.deliverableRequirements.length > 4 && '等'}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleStartEdit('deliverables')}
+                        className="text-[13px] text-blue-600 hover:text-blue-700 font-medium"
+                      >调整</button>
                     </div>
-                    <div className="text-[12px] text-gray-500 mt-1">对象模型、字典、血缘、质量报告等</div>
-                  </div>
-                  <button className="text-[13px] text-blue-600 hover:text-blue-700 font-medium">调整</button>
+                  )}
                 </div>
               </div>
             </div>
@@ -831,9 +1273,19 @@ export default function Home() {
           </div>
 
           {/* Drawer Footer Actions */}
-          <div className="p-5 border-t border-[#E5E7EB] bg-white flex items-center justify-between flex-shrink-0">
+          <div className="p-5 border-t border-[#E5E7EB] bg-white flex items-center justify-between flex-shrink-0 relative">
+            {/* Save Toast */}
+            {saveToast && (
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-green-600 text-white text-[13px] font-medium px-4 py-2 rounded-lg shadow-lg animate-in fade-in zoom-in duration-200 flex items-center gap-2 z-30">
+                <Check size={14} strokeWidth={3}/>
+                草稿已保存
+              </div>
+            )}
             <div className="flex items-center gap-3">
-              <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-[14px] font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+              <button
+                onClick={handleSaveDraft}
+                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-[14px] font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
+              >
                 保存草稿
               </button>
             </div>

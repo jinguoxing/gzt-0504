@@ -16,6 +16,9 @@ export default function AppRoutes() {
         {/* 默认跳转到 AI 工作台 */}
         <Route path="/" element={<Navigate to="/workbench" replace />} />
 
+        {/* AI 工作台首页 — 合同要求 /ai-workbench 可访问 */}
+        <Route path="/ai-workbench" element={<Home />} />
+
         {/* AI 工作台首页（支持 ?draftId=:id 草稿抽屉态） */}
         <Route path="/workbench" element={<Home />} />
 

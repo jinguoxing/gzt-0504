@@ -250,5 +250,28 @@
         ]
       }
     }
+  ],
+  "availableDataSources": [
+    { "id": "ds-supply-chain-prod", "name": "supply_chain_prod", "type": "MySQL", "host": "10.10.10.25", "port": 3306, "database": "supply_chain_prod", "status": "CONNECTED" },
+    { "id": "ds-warehouse-prod", "name": "warehouse_prod", "type": "PostgreSQL", "host": "10.10.10.30", "port": 5432, "database": "warehouse_prod", "status": "CONNECTED" },
+    { "id": "ds-order-analytics", "name": "order_analytics", "type": "MySQL", "host": "10.10.10.40", "port": 3306, "database": "order_analytics", "status": "DISCONNECTED" }
+  ],
+  "availableSchemas": [
+    { "id": "ods_scm", "name": "ods_scm", "tableCount": 86 },
+    { "id": "dwd_scm", "name": "dwd_scm", "tableCount": 56 },
+    { "id": "dim_product", "name": "dim_product", "tableCount": 34 },
+    { "id": "ods_purchase", "name": "ods_purchase", "tableCount": 72 },
+    { "id": "dwd_logistics", "name": "dwd_logistics", "tableCount": 48 },
+    { "id": "ods_inventory", "name": "ods_inventory", "tableCount": 40 }
+  ],
+  "availableUploads": [
+    { "id": "upload-xlsx", "name": "采购明细.xlsx", "type": "XLSX", "sizeBytes": 245760 },
+    { "id": "upload-csv", "name": "供应商清单.csv", "type": "CSV", "sizeBytes": 128000 },
+    { "id": "upload-pdf", "name": "合同模板.pdf", "type": "PDF", "sizeBytes": 512000 }
+  ],
+  "availableDeliverables": [
+    "对象模型", "字段语义字典", "血缘关系", "质量报告",
+    "冲突字段清单", "语义治理报告", "字段质量报告", "数据标准建议",
+    "Schema 演化分析", "敏感字段标注"
   ]
 }
