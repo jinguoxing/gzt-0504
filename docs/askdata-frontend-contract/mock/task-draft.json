@@ -1,0 +1,73 @@
+{
+  "scenario": "clarification_required",
+  "note": "找数问数默认不需要任务草稿；本文件用于口径确认态。",
+  "question": "这个月销售怎么样？",
+  "clarificationRequired": true,
+  "clarification": {
+    "title": "需要确认销售指标口径",
+    "description": "“销售怎么样”存在多个可能指标，请确认你想查看的口径。",
+    "metricCandidates": [
+      {
+        "id": "sales_amount",
+        "label": "销售额",
+        "recommended": true
+      },
+      {
+        "id": "order_count",
+        "label": "订单量"
+      },
+      {
+        "id": "gross_profit",
+        "label": "毛利"
+      },
+      {
+        "id": "avg_order_value",
+        "label": "客单价"
+      }
+    ],
+    "timeRangeOptions": [
+      {
+        "id": "calendar_month",
+        "label": "自然月",
+        "recommended": true
+      },
+      {
+        "id": "fiscal_month",
+        "label": "财务月"
+      }
+    ],
+    "orderScopeOptions": [
+      {
+        "id": "paid",
+        "label": "已支付",
+        "recommended": true
+      },
+      {
+        "id": "shipped",
+        "label": "已发货"
+      },
+      {
+        "id": "all",
+        "label": "全部订单"
+      }
+    ],
+    "recommendedDefault": "已支付订单销售额 + 自然月口径",
+    "actions": [
+      {
+        "id": "use_default",
+        "label": "按推荐口径查询",
+        "type": "confirm"
+      },
+      {
+        "id": "manual_select",
+        "label": "手动选择",
+        "type": "configure"
+      },
+      {
+        "id": "cancel",
+        "label": "取消",
+        "type": "cancel"
+      }
+    ]
+  }
+}

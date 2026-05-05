@@ -1,0 +1,95 @@
+{
+  "currentUser": {
+    "id": "u_litong",
+    "name": "李桐",
+    "email": "liming@semovix.com",
+    "avatarUrl": "/avatars/litong.png"
+  },
+  "project": {
+    "id": "project_supply_chain",
+    "name": "供应链语义治理项目"
+  },
+  "hero": {
+    "title": "今天想让 Xino 帮你完成什么？",
+    "subtitle": "把目标告诉我，Xino 会理解你的需求，规划步骤并生成任务草稿。",
+    "placeholder": "输入任务目标，或 @ 数据源 / 文件 / 对象 / 知识库"
+  },
+  "quickActions": [
+    "上传文件",
+    "选择数据源",
+    "使用模板",
+    "从历史任务开始"
+  ],
+  "capabilityCards": [
+    {
+      "id": "cap_scm",
+      "title": "供应链语义治理",
+      "description": "扫描 Schema，识别业务对象，生成语义字典与关系图谱。",
+      "icon": "Box"
+    },
+    {
+      "id": "cap_field",
+      "title": "字段语义理解",
+      "description": "理解字段语义，标准化命名，同义词识别与定义生成。",
+      "icon": "FileText"
+    },
+    {
+      "id": "cap_mdm",
+      "title": "主数据对象建模",
+      "description": "识别主数据实体，定义属性、关系与唯一性规则。",
+      "icon": "Database"
+    },
+    {
+      "id": "cap_standard",
+      "title": "数据标准梳理",
+      "description": "梳理数据标准，识别冲突与差异，生成标准建议。",
+      "icon": "ShieldCheck"
+    }
+  ],
+  "recentTasks": [
+    {
+      "id": "draft_scm_001",
+      "title": "供应链语义治理草案",
+      "status": "draft",
+      "updatedAt": "10:25"
+    },
+    {
+      "id": "task_mdm_001",
+      "title": "主数据对象建模",
+      "status": "executing",
+      "updatedAt": "昨天"
+    },
+    {
+      "id": "task_field_001",
+      "title": "字段语义梳理",
+      "status": "completed",
+      "updatedAt": "昨天"
+    }
+  ],
+  "commonResources": [
+    {
+      "id": "ds_supply_chain_prod",
+      "name": "supply_chain_prod",
+      "type": "database",
+      "description": "MySQL · 10.10.10.25:3306"
+    },
+    {
+      "id": "res_field_rule",
+      "name": "字段语义规则.xlsx",
+      "type": "xlsx",
+      "size": "38 KB"
+    },
+    {
+      "id": "res_object_def",
+      "name": "业务对象定义.docx",
+      "type": "docx",
+      "size": "112 KB"
+    },
+    {
+      "id": "res_standard_pdf",
+      "name": "供应链数据标准.pdf",
+      "type": "pdf",
+      "size": "2.6 MB"
+    }
+  ]
+}

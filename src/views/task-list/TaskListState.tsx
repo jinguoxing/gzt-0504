@@ -4,7 +4,7 @@ import {
   List, Star, AlertCircle, Archive, LayoutGrid, CheckCircle2, Clock, 
   CircleDot, HelpCircle, Inbox, Users
 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn } from '@/utils/cn';
 
 interface TaskRow {
   id: string;

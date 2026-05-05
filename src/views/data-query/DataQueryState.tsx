@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, User, ChevronRight, ChevronDown, Download, Send, AlertCircle, Maximize2, Table, PanelRight, TrendingUp, TrendingDown, Database, Copy, RefreshCw, Share2, HelpCircle, FileText, Code, Clock, CheckCircle2 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn } from '@/utils/cn';
 import {
   LineChart,
   Line,

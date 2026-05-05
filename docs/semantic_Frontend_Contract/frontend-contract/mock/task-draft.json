@@ -1,0 +1,206 @@
+{
+  "draft": {
+    "draftId": "draft_scm_001",
+    "title": "供应链语义治理闭环任务",
+    "goal": "对供应链数据库进行语义治理，扫描 Schema，识别业务相关表，理解字段语义，生成业务对象与交付物。",
+    "taskTypes": [
+      "语义治理",
+      "Schema 扫描",
+      "业务对象生成",
+      "交付物生成"
+    ],
+    "status": "draft",
+    "dataSource": {
+      "id": "ds_supply_chain_prod",
+      "name": "supply_chain_prod",
+      "type": "MySQL",
+      "host": "10.10.10.25:3306",
+      "status": "connected",
+      "permission": "metadata_read"
+    },
+    "scanScope": {
+      "schemas": [
+        "ods_scm",
+        "dwd_scm"
+      ],
+      "estimatedTableCount": 142,
+      "estimatedFieldCount": 4920
+    },
+    "contextResources": [
+      {
+        "id": "res_prd",
+        "name": "供应链PRD_v2.1.pdf",
+        "type": "pdf",
+        "size": "2.6 MB",
+        "status": "ready"
+      },
+      {
+        "id": "res_rule",
+        "name": "字段语义规则.xlsx",
+        "type": "xlsx",
+        "size": "38 KB",
+        "status": "ready"
+      },
+      {
+        "id": "res_object",
+        "name": "业务对象定义.docx",
+        "type": "docx",
+        "size": "112 KB",
+        "status": "ready"
+      }
+    ],
+    "executionPlan": [
+      {
+        "stageId": "stage_1",
+        "index": 1,
+        "name": "选择与采集",
+        "description": "确认数据源并采集元数据",
+        "status": "completed",
+        "progress": 100,
+        "completedAt": "09:10"
+      },
+      {
+        "stageId": "stage_2",
+        "index": 2,
+        "name": "Schema 扫描",
+        "description": "扫描 Schema、表与字段",
+        "status": "completed",
+        "progress": 100,
+        "completedAt": "09:18"
+      },
+      {
+        "stageId": "stage_3",
+        "index": 3,
+        "name": "业务表识别",
+        "description": "识别业务相关表",
+        "status": "completed",
+        "progress": 100,
+        "completedAt": "09:25"
+      },
+      {
+        "stageId": "stage_4",
+        "index": 4,
+        "name": "字段候选生成",
+        "description": "生成字段语义候选",
+        "status": "completed",
+        "progress": 100,
+        "completedAt": "09:35"
+      },
+      {
+        "stageId": "stage_5",
+        "index": 5,
+        "name": "字段语义理解",
+        "description": "理解字段语义并识别冲突",
+        "status": "running",
+        "progress": 78,
+        "startedAt": "09:45"
+      },
+      {
+        "stageId": "stage_6",
+        "index": 6,
+        "name": "业务对象生成",
+        "description": "生成业务对象与属性",
+        "status": "pending"
+      },
+      {
+        "stageId": "stage_7",
+        "index": 7,
+        "name": "血缘与影响分析",
+        "description": "分析血缘与影响范围",
+        "status": "pending"
+      },
+      {
+        "stageId": "stage_8",
+        "index": 8,
+        "name": "质量校验与校准",
+        "description": "校验结果并生成交付物",
+        "status": "pending"
+      }
+    ],
+    "deliverables": [
+      {
+        "id": "del_req_1",
+        "name": "语义治理报告.pdf",
+        "type": "pdf",
+        "purpose": "给管理者查看治理结论",
+        "required": true
+      },
+      {
+        "id": "del_req_2",
+        "name": "字段语义理解结果.xlsx",
+        "type": "xlsx",
+        "purpose": "给数据团队核对字段语义",
+        "required": true
+      },
+      {
+        "id": "del_req_3",
+        "name": "业务对象清单.xlsx",
+        "type": "xlsx",
+        "purpose": "给业务和研发对齐对象模型",
+        "required": true
+      },
+      {
+        "id": "del_req_4",
+        "name": "语义关系网络.zip",
+        "type": "zip",
+        "purpose": "给系统导入或后续任务复用",
+        "required": false
+      }
+    ],
+    "risks": [
+      {
+        "id": "risk_scope",
+        "title": "扫描范围较大",
+        "severity": "medium",
+        "description": "预计扫描 142 张表、4,920 个字段。",
+        "recommendation": "确认 Schema 范围。",
+        "status": "open"
+      },
+      {
+        "id": "risk_comment",
+        "title": "部分字段缺少注释",
+        "severity": "medium",
+        "description": "可能影响字段语义理解准确率。",
+        "recommendation": "后续优先处理低置信字段。",
+        "status": "open"
+      }
+    ],
+    "estimatedDurationMinutes": 84,
+    "changeLogs": [
+      {
+        "id": "chg_001",
+        "field": "scanScope",
+        "before": "全库",
+        "after": "ods_scm, dwd_scm",
+        "changedBy": "user",
+        "changedAt": "09:43",
+        "reason": "用户要求只扫描采购相关 Schema"
+      }
+    ]
+  },
+  "conversationMessages": [
+    {
+      "id": "msg_user_001",
+      "role": "user",
+      "createdAt": "09:41",
+      "messageType": "normal",
+      "text": "请对供应链数据库进行语义治理，扫描 Schema、识别业务相关表、理解字段语义、生成业务对象与交付物。"
+    },
+    {
+      "id": "msg_xino_001",
+      "role": "xino",
+      "createdAt": "09:42",
+      "messageType": "normal",
+      "text": "我已根据你的目标生成任务草稿，你可以继续告诉我需要调整的范围、数据源和交付物。"
+    }
+  ],
+  "suggestedAdjustments": [
+    "只扫描采购相关 Schema",
+    "增加 Excel 明细文件",
+    "增加字段质量报告",
+    "调整并行度为 10"
+  ],
+  "highlightedKeys": [
+    "scanScope"
+  ]
+}

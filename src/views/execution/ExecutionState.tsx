@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Share2, MoreHorizontal, User, Sparkles, CheckCircle2, ChevronRight, ChevronDown, Download, Send, FileText, Database, AlertCircle, RefreshCw, ArrowLeft, AlertTriangle, HelpCircle, Network, Maximize2, Table, PanelRight } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn } from '@/utils/cn';
 
 export default function ExecutionState() {
   const [activeTab, setActiveTab] = useState<'plan' | 'detail'>('plan');

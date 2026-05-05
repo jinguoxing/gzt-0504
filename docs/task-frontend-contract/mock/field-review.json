@@ -1,0 +1,417 @@
+{
+  "task": {
+    "id": "task-supply-chain-loop",
+    "name": "供应链语义治理闭环任务",
+    "subtitle": "闭环治理 · 供应链语义治理团队",
+    "type": "SEMANTIC_GOVERNANCE",
+    "project": {
+      "id": "p-supply-chain",
+      "name": "供应链语义治理项目",
+      "description": "供应链数据语义治理与智能执行项目"
+    },
+    "status": "RUNNING",
+    "currentStage": {
+      "id": "stage-5",
+      "index": 5,
+      "name": "字段确认与冲突处理",
+      "status": "RUNNING",
+      "progress": 63
+    },
+    "stages": [
+      {
+        "id": "stage-1",
+        "index": 1,
+        "name": "选择与采集",
+        "status": "COMPLETED",
+        "progress": 100,
+        "completedAt": "2025-05-16T09:10:00+08:00",
+        "summary": "完成数据源选择与连接"
+      },
+      {
+        "id": "stage-2",
+        "index": 2,
+        "name": "Schema 扫描",
+        "status": "COMPLETED",
+        "progress": 100,
+        "completedAt": "2025-05-16T09:20:00+08:00",
+        "summary": "扫描 128 张表，4,920 个字段"
+      },
+      {
+        "id": "stage-3",
+        "index": 3,
+        "name": "业务表识别",
+        "status": "COMPLETED",
+        "progress": 100,
+        "completedAt": "2025-05-16T09:32:00+08:00",
+        "summary": "识别供应链业务相关表"
+      },
+      {
+        "id": "stage-4",
+        "index": 4,
+        "name": "字段候选生成",
+        "status": "COMPLETED",
+        "progress": 100,
+        "completedAt": "2025-05-16T09:40:00+08:00",
+        "summary": "生成字段语义候选"
+      },
+      {
+        "id": "stage-5",
+        "index": 5,
+        "name": "字段语义理解",
+        "status": "RUNNING",
+        "progress": 78,
+        "startedAt": "2025-05-16T09:45:00+08:00",
+        "summary": "识别字段语义与冲突字段"
+      },
+      {
+        "id": "stage-6",
+        "index": 6,
+        "name": "业务对象生成",
+        "status": "PENDING",
+        "progress": 0
+      },
+      {
+        "id": "stage-7",
+        "index": 7,
+        "name": "血缘与影响分析",
+        "status": "PENDING",
+        "progress": 0
+      },
+      {
+        "id": "stage-8",
+        "index": 8,
+        "name": "质量校验与校准",
+        "status": "PENDING",
+        "progress": 0
+      }
+    ],
+    "progress": 63,
+    "owner": {
+      "id": "u-litong",
+      "name": "李桐",
+      "email": "liming@semovix.com",
+      "avatarUrl": "/avatars/litong.png",
+      "role": "owner"
+    },
+    "creator": {
+      "id": "u-litong",
+      "name": "李桐",
+      "email": "liming@semovix.com",
+      "avatarUrl": "/avatars/litong.png",
+      "role": "owner"
+    },
+    "priority": "HIGH",
+    "pendingItemCount": 3,
+    "dataSource": {
+      "id": "ds-supply-chain-prod",
+      "name": "supply_chain_prod",
+      "type": "MySQL",
+      "host": "10.10.10.25",
+      "port": 3306,
+      "database": "supply_chain_prod",
+      "status": "CONNECTED",
+      "selectedTableCount": 128,
+      "scannedFieldCount": 4920
+    },
+    "contextResources": [
+      {
+        "id": "res-prd",
+        "name": "供应链PRD_v2.1.pdf",
+        "type": "PDF",
+        "sizeBytes": 2726297,
+        "uploadedBy": {
+          "id": "u-litong",
+          "name": "李桐",
+          "email": "liming@semovix.com",
+          "avatarUrl": "/avatars/litong.png",
+          "role": "owner"
+        },
+        "uploadedAt": "2025-05-15T09:00:00+08:00"
+      },
+      {
+        "id": "res-field-rule",
+        "name": "字段语义规则.xlsx",
+        "type": "XLSX",
+        "sizeBytes": 38912,
+        "uploadedBy": {
+          "id": "u-litong",
+          "name": "李桐",
+          "email": "liming@semovix.com",
+          "avatarUrl": "/avatars/litong.png",
+          "role": "owner"
+        },
+        "uploadedAt": "2025-05-15T09:02:00+08:00"
+      },
+      {
+        "id": "res-object-def",
+        "name": "业务对象定义.docx",
+        "type": "DOCX",
+        "sizeBytes": 114688,
+        "uploadedBy": {
+          "id": "u-litong",
+          "name": "李桐",
+          "email": "liming@semovix.com",
+          "avatarUrl": "/avatars/litong.png",
+          "role": "owner"
+        },
+        "uploadedAt": "2025-05-15T09:03:00+08:00"
+      }
+    ],
+    "createdAt": "2025-05-15T09:00:00+08:00",
+    "updatedAt": "2025-05-16T09:50:00+08:00",
+    "starred": true
+  },
+  "overview": {
+    "pendingFields": 326,
+    "conflictFields": 41,
+    "abnormalFields": 37,
+    "processedFields": 128
+  },
+  "fields": [
+    {
+      "id": "field-po-status",
+      "fieldName": "po_status",
+      "tableName": "po_status",
+      "semanticA": "采购订单状态",
+      "semanticB": "采购订单处理状态",
+      "conflictSource": "业务语义冲突",
+      "confidence": 0.62,
+      "riskLevel": "MEDIUM",
+      "recommendedAction": "CONFIRM_A",
+      "status": "PENDING",
+      "samples": [
+        "NEW",
+        "APPROVED",
+        "REJECTED",
+        "CANCELLED",
+        "CLOSED",
+        "ON_HOLD"
+      ],
+      "evidence": [
+        "来源：采购订单状态码字典",
+        "匹配度：78%",
+        "在采购流程中表示订单当前状态"
+      ],
+      "similarFields": [
+        {
+          "fieldName": "order_status",
+          "semantic": "订单状态",
+          "confidence": 0.89
+        },
+        {
+          "fieldName": "po_order_status",
+          "semantic": "采购订单状态",
+          "confidence": 0.82
+        }
+      ]
+    },
+    {
+      "id": "field-supplier-code",
+      "fieldName": "supplier_code",
+      "tableName": "supplier_info",
+      "semanticA": "供应商编码",
+      "semanticB": "供应商内部编码",
+      "conflictSource": "命名规则冲突",
+      "confidence": 0.88,
+      "riskLevel": "LOW",
+      "recommendedAction": "CONFIRM_A",
+      "status": "PENDING"
+    },
+    {
+      "id": "field-wh-id",
+      "fieldName": "wh_id",
+      "tableName": "warehouse",
+      "semanticA": "仓库标识",
+      "semanticB": "仓库ID",
+      "conflictSource": "字段缩写冲突",
+      "confidence": 0.8,
+      "riskLevel": "LOW",
+      "recommendedAction": "CONFIRM_B",
+      "status": "PENDING"
+    },
+    {
+      "id": "field-line-type",
+      "fieldName": "line_type",
+      "tableName": "po_line",
+      "semanticA": "订单行类型",
+      "semanticB": "行项目类型",
+      "conflictSource": "业务域命名冲突",
+      "confidence": 0.45,
+      "riskLevel": "MEDIUM",
+      "recommendedAction": "MANUAL_EDIT",
+      "status": "PENDING"
+    },
+    {
+      "id": "field-buyer-name",
+      "fieldName": "buyer_name",
+      "tableName": "buyer",
+      "semanticA": "采购员姓名",
+      "semanticB": "采购负责人姓名",
+      "conflictSource": "角色定义冲突",
+      "confidence": 0.55,
+      "riskLevel": "MEDIUM",
+      "recommendedAction": "MANUAL_EDIT",
+      "status": "PENDING"
+    }
+  ],
+  "selectedField": {
+    "id": "field-po-status",
+    "fieldName": "po_status",
+    "tableName": "po_status",
+    "semanticA": "采购订单状态",
+    "semanticB": "采购订单处理状态",
+    "conflictSource": "业务语义冲突",
+    "confidence": 0.62,
+    "riskLevel": "MEDIUM",
+    "recommendedAction": "CONFIRM_A",
+    "status": "PENDING",
+    "samples": [
+      "NEW",
+      "APPROVED",
+      "REJECTED",
+      "CANCELLED",
+      "CLOSED",
+      "ON_HOLD"
+    ],
+    "evidence": [
+      "来源：采购订单状态码字典",
+      "匹配度：78%",
+      "在采购流程中表示订单当前状态"
+    ],
+    "similarFields": [
+      {
+        "fieldName": "order_status",
+        "semantic": "订单状态",
+        "confidence": 0.89
+      },
+      {
+        "fieldName": "po_order_status",
+        "semantic": "采购订单状态",
+        "confidence": 0.82
+      }
+    ]
+  },
+  "sidePanel": {
+    "plan": [
+      {
+        "id": "stage-1",
+        "index": 1,
+        "name": "选择与采集",
+        "status": "COMPLETED",
+        "progress": 100,
+        "completedAt": "2025-05-16T09:10:00+08:00",
+        "summary": "完成数据源选择与连接"
+      },
+      {
+        "id": "stage-2",
+        "index": 2,
+        "name": "Schema 扫描",
+        "status": "COMPLETED",
+        "progress": 100,
+        "completedAt": "2025-05-16T09:20:00+08:00",
+        "summary": "扫描 128 张表，4,920 个字段"
+      },
+      {
+        "id": "stage-3",
+        "index": 3,
+        "name": "业务表识别",
+        "status": "COMPLETED",
+        "progress": 100,
+        "completedAt": "2025-05-16T09:32:00+08:00",
+        "summary": "识别供应链业务相关表"
+      },
+      {
+        "id": "stage-4",
+        "index": 4,
+        "name": "字段候选生成",
+        "status": "COMPLETED",
+        "progress": 100,
+        "completedAt": "2025-05-16T09:40:00+08:00",
+        "summary": "生成字段语义候选"
+      },
+      {
+        "id": "stage-5",
+        "index": 5,
+        "name": "字段语义理解",
+        "status": "RUNNING",
+        "progress": 78,
+        "startedAt": "2025-05-16T09:45:00+08:00",
+        "summary": "识别字段语义与冲突字段"
+      },
+      {
+        "id": "stage-6",
+        "index": 6,
+        "name": "业务对象生成",
+        "status": "PENDING",
+        "progress": 0
+      },
+      {
+        "id": "stage-7",
+        "index": 7,
+        "name": "血缘与影响分析",
+        "status": "PENDING",
+        "progress": 0
+      },
+      {
+        "id": "stage-8",
+        "index": 8,
+        "name": "质量校验与校准",
+        "status": "PENDING",
+        "progress": 0
+      }
+    ],
+    "process": {
+      "pending": 326,
+      "conflict": 41,
+      "abnormal": 37,
+      "processed": 128,
+      "total": 895
+    },
+    "risks": [
+      {
+        "id": "rv-risk-1",
+        "level": "HIGH",
+        "title": "5 个高风险冲突字段未处理",
+        "actionLabel": "去处理"
+      },
+      {
+        "id": "rv-risk-2",
+        "level": "MEDIUM",
+        "title": "18 个中风险冲突字段未处理",
+        "actionLabel": "查看"
+      }
+    ],
+    "deliverables": [
+      {
+        "id": "rv-deliv-1",
+        "name": "字段确认清单_20250515.xlsx",
+        "type": "XLSX",
+        "createdAt": "2025-05-15T09:45:00+08:00",
+        "createdBy": {
+          "id": "xino",
+          "name": "Xino"
+        }
+      },
+      {
+        "id": "rv-deliv-2",
+        "name": "冲突字段清单_20250515.xlsx",
+        "type": "XLSX",
+        "createdAt": "2025-05-15T09:45:00+08:00",
+        "createdBy": {
+          "id": "xino",
+          "name": "Xino"
+        }
+      },
+      {
+        "id": "rv-deliv-3",
+        "name": "待确认字段清单_20250515.xlsx",
+        "type": "XLSX",
+        "createdAt": "2025-05-15T09:45:00+08:00",
+        "createdBy": {
+          "id": "xino",
+          "name": "Xino"
+        }
+      }
+    ]
+  }
+}

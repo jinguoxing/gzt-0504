@@ -1,0 +1,65 @@
+{
+  "selectedField": {
+    "fieldId": "field_po_status",
+    "fieldName": "po_status",
+    "tableName": "po_header",
+    "schemaName": "ods_scm",
+    "status": "conflict",
+    "recommendedSemantic": "采购订单状态",
+    "confidence": 0.78,
+    "source": "业务词典 + 规则推断"
+  },
+  "sampleValues": [
+    "NEW",
+    "APPROVED",
+    "REJECTED",
+    "CANCELLED",
+    "CLOSED",
+    "ON_HOLD"
+  ],
+  "candidates": [
+    {
+      "semantic": "采购订单状态",
+      "confidence": 0.78,
+      "source": "业务词典"
+    },
+    {
+      "semantic": "采购订单处理状态",
+      "confidence": 0.62,
+      "source": "历史映射"
+    }
+  ],
+  "reasoning": [
+    "字段名包含 status，常用于状态类字段。",
+    "表 po_header 属于采购订单域。",
+    "样例值与订单状态字典匹配。",
+    "与 po_order_status 相似度 89%。"
+  ],
+  "relatedObjects": [
+    "采购订单 PurchaseOrder",
+    "采购订单明细 PurchaseOrderLine",
+    "供应商 Supplier"
+  ],
+  "operationLogs": [
+    {
+      "time": "09:32",
+      "actor": "Xino",
+      "content": "自动识别为冲突字段"
+    },
+    {
+      "time": "09:35",
+      "actor": "李桐",
+      "content": "查看字段详情"
+    },
+    {
+      "time": "09:40",
+      "actor": "Xino",
+      "content": "推荐确认为采购订单状态"
+    }
+  ],
+  "actions": [
+    "确认为推荐语义",
+    "手动修改",
+    "忽略字段"
+  ]
+}

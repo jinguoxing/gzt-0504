@@ -1,21 +1,18 @@
 import React from 'react';
-import { Home, Monitor, ListTodo, FileText, Clock, Share2, Plus, Sparkles, Building2, User } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Plus, Building2, User } from 'lucide-react';
+import { cn } from '@/utils/cn';
+import { NAV_ITEMS } from '@/config/menuConfig';
 
-interface LeftNavProps {
-  activeNav: string;
-}
+export default function LeftNav() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-const NAV_ITEMS = [
-  { label: '首页', icon: Home },
-  { label: 'AI 工作台', icon: Sparkles },
-  { label: '任务', icon: ListTodo },
-  { label: '文件', icon: FileText },
-  { label: '历史记录', icon: Clock },
-  { label: '与我共享', icon: Share2 },
-];
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path);
+  };
 
-export default function LeftNav({ activeNav }: LeftNavProps) {
   return (
     <div className="w-[240px] h-full bg-[#F8FAFC] border-r border-[#E5E7EB] flex flex-col flex-shrink-0">
       {/* Logo & Brand */}
@@ -38,14 +35,15 @@ export default function LeftNav({ activeNav }: LeftNavProps) {
           {NAV_ITEMS.map((item) => (
             <button
               key={item.label}
+              onClick={() => navigate(item.path)}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-                activeNav === item.label
+                isActive(item.path)
                   ? "bg-blue-50 text-blue-600"
                   : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
               )}
             >
-              <item.icon size={18} className={activeNav === item.label ? "text-blue-600" : "text-gray-400"} />
+              <item.icon size={18} className={isActive(item.path) ? "text-blue-600" : "text-gray-400"} />
               {item.label}
             </button>
           ))}

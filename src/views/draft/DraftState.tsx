@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, User, Paperclip, AtSign, Send, X, Edit2, RotateCw, FileText, ChevronDown, Check, Clock, Settings2 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn } from '@/utils/cn';
 
 export default function DraftState({ onExecute }: { onExecute: () => void }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);

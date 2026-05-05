@@ -1,0 +1,129 @@
+{
+  "taskId": "task_scm_001",
+  "title": "供应链语义治理闭环任务",
+  "status": "completed",
+  "progress": 100,
+  "completedAt": "2025-05-16 14:32",
+  "summaryMetrics": [
+    {
+      "label": "已扫描字段",
+      "value": 4920
+    },
+    {
+      "label": "已生成业务对象",
+      "value": 12
+    },
+    {
+      "label": "已确认对象关系",
+      "value": 21
+    },
+    {
+      "label": "已产出交付物",
+      "value": 6
+    },
+    {
+      "label": "待跟进事项",
+      "value": 2
+    }
+  ],
+  "stageTimeline": [
+    {
+      "name": "数据源扫描",
+      "status": "completed",
+      "result": "字段 4,920 个",
+      "completedAt": "05-16 09:10"
+    },
+    {
+      "name": "字段语义理解",
+      "status": "completed",
+      "result": "准确率 92%",
+      "completedAt": "05-16 09:28"
+    },
+    {
+      "name": "业务对象生成",
+      "status": "completed",
+      "result": "生成对象 12 个",
+      "completedAt": "05-16 09:45"
+    },
+    {
+      "name": "关系发现与校验",
+      "status": "completed",
+      "result": "确认关系 21 条",
+      "completedAt": "05-16 10:15"
+    },
+    {
+      "name": "标准映射与对齐",
+      "status": "completed",
+      "result": "覆盖率 88%",
+      "completedAt": "05-16 10:40"
+    },
+    {
+      "name": "冲突检测与修复",
+      "status": "completed",
+      "result": "修复 15 条",
+      "completedAt": "05-16 11:20"
+    },
+    {
+      "name": "业务确认与验证",
+      "status": "completed",
+      "result": "通过率 95%",
+      "completedAt": "05-16 13:30"
+    },
+    {
+      "name": "报告与交付",
+      "status": "completed",
+      "result": "交付物 6 份",
+      "completedAt": "05-16 14:32"
+    }
+  ],
+  "deliverables": [
+    {
+      "id": "del_report",
+      "name": "语义治理报告.pdf",
+      "type": "pdf",
+      "purpose": "给管理者查看治理结论",
+      "createdAt": "14:30"
+    },
+    {
+      "id": "del_field_result",
+      "name": "字段语义理解结果.xlsx",
+      "type": "xlsx",
+      "purpose": "给数据团队核对字段语义",
+      "createdAt": "14:12"
+    },
+    {
+      "id": "del_object_list",
+      "name": "业务对象清单.xlsx",
+      "type": "xlsx",
+      "purpose": "给业务和研发对齐对象模型",
+      "createdAt": "13:58"
+    },
+    {
+      "id": "del_graph_zip",
+      "name": "语义关系网络.zip",
+      "type": "zip",
+      "purpose": "给系统导入或后续任务复用",
+      "createdAt": "13:45"
+    },
+    {
+      "id": "del_todo",
+      "name": "待确认任务清单.xlsx",
+      "type": "xlsx",
+      "purpose": "给业务方继续确认",
+      "createdAt": "13:40"
+    },
+    {
+      "id": "del_suggestion",
+      "name": "实施建议报告.pdf",
+      "type": "pdf",
+      "purpose": "给治理落地团队制定计划",
+      "createdAt": "14:30"
+    }
+  ],
+  "nextRecommendations": [
+    "进入映射修复任务",
+    "共享给团队",
+    "继续治理其他数据源",
+    "归档任务"
+  ]
+}
