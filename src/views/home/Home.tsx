@@ -7,7 +7,7 @@ const SCENARIOS = [
     key: 'semantic-governance',
     title: '语义治理',
     description: '扫描数据库 Schema，识别业务表，理解字段语义，生成业务对象与交付物。',
-    path: '/draft',
+    path: '/draft',  // 后续改为 /workbench?draftId=:id
     icon: Database,
     buttonText: '开始治理',
     color: 'blue',
@@ -27,7 +27,7 @@ export default function Home() {
   const navigate = useNavigate();
 
   const handleSend = () => {
-    navigate('/draft');
+    navigate('/draft');  // 后续改为 /workbench?draftId=:id
   };
 
   return (

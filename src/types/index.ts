@@ -6,6 +6,8 @@ export interface NavItem {
   label: string;
   icon: any;
   path: string;
+  /** 用于高亮匹配的路径前缀 */
+  highlightPattern: string;
 }
 
 /** 任务行数据 */

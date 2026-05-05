@@ -8,9 +8,9 @@ export default function LeftNav() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isActive = (path: string) => {
-    if (path === '/') return location.pathname === '/';
-    return location.pathname.startsWith(path);
+  const isActive = (highlightPattern: string) => {
+    if (highlightPattern === '/') return location.pathname === '/';
+    return location.pathname.startsWith(highlightPattern);
   };
 
   return (
@@ -23,7 +23,10 @@ export default function LeftNav() {
 
       {/* Main Action */}
       <div className="px-4 mb-4">
-        <button className="w-full flex items-center justify-center gap-2 bg-white border border-[#D1D5DB] hover:bg-gray-50 text-gray-700 text-[14px] font-medium py-2 px-4 rounded-lg shadow-sm transition-colors">
+        <button
+          onClick={() => navigate('/workbench')}
+          className="w-full flex items-center justify-center gap-2 bg-white border border-[#D1D5DB] hover:bg-gray-50 text-gray-700 text-[14px] font-medium py-2 px-4 rounded-lg shadow-sm transition-colors"
+        >
           <Plus size={16} />
           新建任务
         </button>
@@ -32,21 +35,24 @@ export default function LeftNav() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-4 pb-4">
         <div className="space-y-0.5 mb-6">
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => navigate(item.path)}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-                isActive(item.path)
-                  ? "bg-blue-50 text-blue-600"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-              )}
-            >
-              <item.icon size={18} className={isActive(item.path) ? "text-blue-600" : "text-gray-400"} />
-              {item.label}
-            </button>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const active = isActive(item.highlightPattern);
+            return (
+              <button
+                key={item.label}
+                onClick={() => navigate(item.path)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
+                  active
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                )}
+              >
+                <item.icon size={18} className={active ? "text-blue-600" : "text-gray-400"} />
+                {item.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* 固定任务 */}
@@ -54,7 +60,11 @@ export default function LeftNav() {
           <h3 className="px-3 text-[12px] font-medium text-gray-400 mb-2">固定任务</h3>
           <div className="space-y-0.5">
             {['供应链语义治理闭环任务', '客户语义治理', '主数据治理项目'].map((task) => (
-              <button key={task} className="w-full text-left px-3 py-1.5 rounded-lg text-[13px] text-gray-600 hover:bg-gray-100 hover:text-gray-900 truncate">
+              <button
+                key={task}
+                onClick={() => navigate('/tasks/task-supply-chain-loop')}
+                className="w-full text-left px-3 py-1.5 rounded-lg text-[13px] text-gray-600 hover:bg-gray-100 hover:text-gray-900 truncate"
+              >
                 {task}
               </button>
             ))}
@@ -72,7 +82,11 @@ export default function LeftNav() {
               '库存周转天数趋势',
               '采购订单异常监控'
             ].map((task) => (
-              <button key={task} className="w-full text-left px-3 py-1.5 rounded-lg text-[13px] text-gray-600 hover:bg-gray-100 hover:text-gray-900 truncate">
+              <button
+                key={task}
+                onClick={() => navigate('/data-query')}
+                className="w-full text-left px-3 py-1.5 rounded-lg text-[13px] text-gray-600 hover:bg-gray-100 hover:text-gray-900 truncate"
+              >
                 {task}
               </button>
             ))}
