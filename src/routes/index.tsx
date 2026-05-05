@@ -6,6 +6,9 @@ import DraftState from '@/views/draft/DraftState';
 import ExecutionState from '@/views/execution/ExecutionState';
 import DataQueryState from '@/views/data-query/DataQueryState';
 import TaskListState from '@/views/task-list/TaskListState';
+import TaskCenter from '@/views/task-center/TaskCenter';
+import ReviewDetail from '@/views/review/ReviewDetail';
+import CompletedTask from '@/views/completed/CompletedTask';
 
 export default function AppRoutes() {
   return (
@@ -17,17 +20,20 @@ export default function AppRoutes() {
         {/* AI 工作台首页（草稿抽屉态后续通过 query 参数 ?draftId=:id 实现） */}
         <Route path="/workbench" element={<Home />} />
 
-        {/* 任务中心 */}
-        <Route path="/tasks" element={<TaskListState />} />
+        {/* 任务中心摘要页 */}
+        <Route path="/tasks" element={<TaskCenter />} />
+
+        {/* 全部任务列表 */}
+        <Route path="/tasks/all" element={<TaskListState />} />
 
         {/* 任务执行页（动态 taskId） */}
         <Route path="/tasks/:taskId" element={<ExecutionState />} />
 
-        {/* Review Detail（后续实现） */}
-        {/* <Route path="/tasks/:taskId/review/:reviewId" element={<ReviewDetail />} /> */}
+        {/* 审核详情页 */}
+        <Route path="/tasks/:taskId/review/:reviewId" element={<ReviewDetail />} />
 
-        {/* 任务完成态（后续实现） */}
-        {/* <Route path="/tasks/:taskId/completed" element={<CompletedTask />} /> */}
+        {/* 任务完成态 */}
+        <Route path="/tasks/:taskId/completed" element={<CompletedTask />} />
 
         {/* 找数问数 */}
         <Route path="/data-query" element={<DataQueryState />} />
