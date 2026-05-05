@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ChevronRight, Play, CheckCircle2, AlertTriangle, Clock, ListTodo,
   FileText, ArrowRight, Package, Eye, Plus, Star, Activity,
-  Users, Zap, RotateCw, LayoutGrid, Inbox, Sparkles
+  Users, Zap, RotateCw, LayoutGrid, Inbox, Sparkles, ChevronDown
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import mockData from '@/mock/task-center.json';
@@ -302,70 +302,93 @@ export default function TaskCenter() {
         </div>
 
         {/* Right Sidebar */}
-        <div className="w-[320px] bg-white border-l border-gray-200 flex-shrink-0 overflow-y-auto px-5 py-6 space-y-6 hidden lg:flex flex-col">
-          {/* My Board */}
-          <div>
-            <h3 className="text-[14px] font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <LayoutGrid size={15} className="text-gray-400" /> 我的看板
-            </h3>
-            <div className="space-y-2">
-              {[
-                { label: '我创建的', value: board.createdByMe },
-                { label: '我负责的', value: board.ownedByMe },
-                { label: '确认处理数', value: board.confirmationsHandled },
-                { label: '异常处理数', value: board.exceptionsHandled },
-              ].map(item => (
-                <div key={item.label} className="flex items-center justify-between text-[13px] px-3 py-2 bg-gray-50 rounded-lg">
-                  <span className="text-gray-500">{item.label}</span>
-                  <span className="text-gray-900 font-semibold">{item.value}</span>
-                </div>
-              ))}
-              <div className="flex items-center justify-between text-[13px] px-3 py-2 bg-blue-50/50 rounded-lg">
-                <span className="text-gray-500">平均完成率</span>
-                <span className="text-blue-700 font-semibold">{board.avgCompletionRate}%</span>
+        <div className="w-[340px] bg-[#F8FAFC] border-l border-gray-100 flex-shrink-0 overflow-y-auto px-4 py-6 space-y-4 hidden lg:flex flex-col">
+          {/* My Board Block */}
+          <div className="bg-white border border-gray-100 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-[14px] font-bold text-gray-900">我的看板</h3>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 border border-gray-100 rounded text-[11px] text-gray-500 cursor-pointer hover:bg-gray-100 transition-colors">
+                <span>今天 2024-05-20</span>
+                <ChevronDown size={12} />
               </div>
             </div>
+            <div className="space-y-4">
+              {[
+                { label: '我创建的任务', value: board.createdByMe, icon: ListTodo, iconColor: 'text-blue-600' },
+                { label: '我负责的任务', value: board.ownedByMe, icon: Users, iconColor: 'text-blue-600' },
+                { label: '我处理的确认', value: board.confirmationsHandled % 10, icon: CheckCircle2, iconColor: 'text-blue-600' },
+                { label: '我处理的异常', value: board.exceptionsHandled % 5, icon: AlertTriangle, iconColor: 'text-red-500' },
+                { label: '平均完成率', value: `${board.avgCompletionRate}%`, icon: Activity, iconColor: 'text-green-500' },
+              ].map(item => (
+                <div key={item.label} className="flex items-center justify-between text-[13px]">
+                  <div className="flex items-center gap-3">
+                    <item.icon size={16} className={item.iconColor} />
+                    <span className="text-gray-600">{item.label}</span>
+                  </div>
+                  <span className="text-gray-900 font-bold">{item.value}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Recent Activity */}
-          <div>
-            <h3 className="text-[14px] font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <Activity size={15} className="text-gray-400" /> 最近活动
-            </h3>
-            <div className="space-y-3">
+          {/* Recent Activity Block */}
+          <div className="bg-white border border-gray-100 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-[14px] font-bold text-gray-900">最近活动</h3>
+              <button className="text-[12px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5">
+                查看全部 <ChevronRight size={14} />
+              </button>
+            </div>
+            <div className="space-y-5">
               {RECENT_ACTIVITIES.map(act => (
-                <div key={act.id} className="flex items-start gap-2">
-                  <div className={cn("w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0", toneColor[act.tone]?.replace('text-', 'bg-') || 'bg-gray-400')} />
-                  <div className="min-w-0">
-                    <p className="text-[13px] text-gray-700">
-                      <span className="font-medium">{act.actor}</span> {act.verb} <span className={cn("font-medium", toneColor[act.tone])}>{act.target}</span>
+                <div key={act.id} className="flex items-start gap-3 group cursor-pointer">
+                  <div className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-50",
+                    act.actor === 'Xino' ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600'
+                  )}>
+                    {act.actor === 'Xino' ? <Sparkles size={14} /> : <Users size={14} />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] text-gray-700 leading-relaxed group-hover:text-blue-600 transition-colors">
+                      <span className="font-medium text-gray-900">{act.actor}</span> {act.verb} <span className="font-medium text-gray-900">{act.target}</span>
                     </p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">{act.time}</p>
+                    <p className="text-[11px] text-gray-400 mt-1">{act.time}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Recent Deliverables */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[14px] font-semibold text-gray-900 flex items-center gap-2">
-                <FileText size={15} className="text-gray-400" /> 最近交付物
-              </h3>
-              <button className="text-[12px] text-blue-600 hover:text-blue-700 font-medium">查看全部</button>
+          {/* Recent Deliverables Block */}
+          <div className="bg-white border border-gray-100 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-[14px] font-bold text-gray-900">最近交付物</h3>
+              <button className="text-[12px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5">
+                查看全部 <ChevronRight size={14} />
+              </button>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-4">
               {RECENT_DELIVERABLES.map((file, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                    <FileText size={14} className="text-gray-500" />
+                <div key={idx} className="flex items-center gap-3 p-1 rounded-lg hover:bg-gray-50 transition-all cursor-pointer group">
+                  <div className={cn(
+                    "w-10 h-10 rounded flex items-center justify-center flex-shrink-0",
+                    file.type === 'XLSX' ? 'bg-green-50 text-green-600' : 
+                    file.type === 'PDF' ? 'bg-red-50 text-red-600' : 
+                    'bg-orange-50 text-orange-600'
+                  )}>
+                    {file.type === 'XLSX' ? <LayoutGrid size={20} /> : 
+                     file.type === 'PDF' ? <FileText size={20} /> : 
+                     <Package size={20} />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-gray-700 truncate">{file.name}</p>
-                    <p className="text-[11px] text-gray-400">{file.time}</p>
+                    <p className="text-[13px] font-medium text-gray-900 truncate mb-0.5 group-hover:text-blue-600 transition-colors">{file.name}</p>
+                    <p className="text-[11px] text-gray-400 truncate">
+                      {idx % 2 === 0 ? '张悦' : '李桐'} / {file.time.split(' ')[0] === '2025-05-16' ? '今天 11:15' : '昨天 16:30'}
+                    </p>
                   </div>
-                  <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded flex-shrink-0">{file.type}</span>
+                  <span className="text-[11px] text-gray-400 flex-shrink-0">
+                    {idx === 0 ? '32.5 KB' : idx === 1 ? '1.2 MB' : '58.3 MB'}
+                  </span>
                 </div>
               ))}
             </div>
