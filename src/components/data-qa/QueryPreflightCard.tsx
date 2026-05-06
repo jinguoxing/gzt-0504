@@ -3,7 +3,13 @@ import { ShieldCheck, Clock, Database, AlertTriangle, ChevronRight } from 'lucid
 import { cn } from '@/utils/cn';
 import type { DataQaResultBlock } from '@/types';
 
-export default function QueryPreflightCard({ block }: { block: DataQaResultBlock }) {
+export default function QueryPreflightCard({
+  block,
+  onAction,
+}: {
+  block: DataQaResultBlock;
+  onAction?: (action: string, block: DataQaResultBlock) => void;
+}) {
   const [status, setStatus] = useState<'pending' | 'confirmed' | 'cancelled'>('pending');
   const { data } = block;
 
@@ -26,6 +32,15 @@ export default function QueryPreflightCard({ block }: { block: DataQaResultBlock
     );
   }
 
+  const handleAction = (action: string) => {
+    if (action === 'cancel') {
+      setStatus('cancelled');
+    } else if (action === 'continue_query') {
+      setStatus('confirmed');
+    }
+    onAction?.(action, block);
+  };
+
   return (
     <div className="border border-amber-200 rounded-xl overflow-hidden shadow-sm bg-white">
       <div className="px-4 py-3 border-b border-amber-100 bg-amber-50/50 flex items-center gap-2">
@@ -45,19 +60,25 @@ export default function QueryPreflightCard({ block }: { block: DataQaResultBlock
         )}
         <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
           <button
-            onClick={() => setStatus('confirmed')}
+            onClick={() => handleAction('continue_query')}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1"
           >
             继续查询 <ChevronRight size={14} />
           </button>
-          <button className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-[13px] font-medium transition-colors">
+          <button
+            onClick={() => handleAction('narrow_scope')}
+            className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-[13px] font-medium transition-colors"
+          >
             缩小范围
           </button>
-          <button className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-[13px] font-medium transition-colors">
+          <button
+            onClick={() => handleAction('summary_only')}
+            className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-[13px] font-medium transition-colors"
+          >
             只看汇总
           </button>
           <button
-            onClick={() => setStatus('cancelled')}
+            onClick={() => handleAction('cancel')}
             className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-500 rounded-lg text-[13px] font-medium transition-colors"
           >
             取消

@@ -11,6 +11,7 @@ export default function QuestionThread({
   messages,
   isXinoTyping,
   onAction,
+  onCardAction,
   onFollowup,
   onClarify,
   onClarifyCancel,
@@ -20,6 +21,7 @@ export default function QuestionThread({
   messages: DataQaMessage[];
   isXinoTyping: boolean;
   onAction: (action: DataQaResultAction, block: DataQaResultBlock) => void;
+  onCardAction?: (action: string, block: DataQaResultBlock) => void;
   onFollowup: (question: string) => void;
   onClarify: (selections: { metric: string; timeRange: string; scope?: string }) => void;
   onClarifyCancel: () => void;
@@ -35,6 +37,7 @@ export default function QuestionThread({
             <DataQaResultBlockRenderer
               block={block}
               onAction={onAction}
+              onCardAction={onCardAction}
               onFollowup={onFollowup}
               onClarify={onClarify}
               onClarifyCancel={onClarifyCancel}

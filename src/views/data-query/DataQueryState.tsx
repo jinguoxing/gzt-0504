@@ -7,7 +7,7 @@ import DataQaHeader from '@/components/data-qa/DataQaHeader';
 import QuestionThread from '@/components/data-qa/QuestionThread';
 import FollowupInputBar from '@/components/data-qa/FollowupInputBar';
 import AnswerEvidenceSidebar, { RightPanelMode } from '@/components/data-qa/AnswerEvidenceSidebar';
-import type { DataQaSession, DataQaMessage, DataQaResultBlock, DataQaResultAction } from '@/types';
+import type { DataQaSession, DataQaMessage, DataQaResultBlock, DataQaResultAction, AnswerEvidence } from '@/types';
 
 const initialSession = mockData as unknown as DataQaSession;
 const clarificationData = (mockData as any).clarificationExample;
@@ -178,20 +178,8 @@ export default function DataQueryState() {
   const originalQuestion = sessionData?.originalQuestion || queryQuestion;
   const queryType = originalQuestion ? detectQueryType(originalQuestion) : 'single_metric';
 
-  // Completed mode — render dedicated completed view
+  // ALL hooks must be declared before any early return to avoid Hooks order violations
   const [showCompleted, setShowCompleted] = useState(status === 'completed');
-  if (showCompleted) {
-    return (
-      <DataQaCompletedView
-        data={completedData}
-        onResume={() => {
-          setShowCompleted(false);
-          setSearchParams({}, { replace: true });
-        }}
-      />
-    );
-  }
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [rightPanelMode, setRightPanelMode] = useState<RightPanelMode>(
     (panel as RightPanelMode) || 'evidence'
@@ -226,7 +214,15 @@ export default function DataQueryState() {
         ? buildMockMessages(originalQuestion, queryType)
         : [...initialSession.messages]
   );
-  const evidence = initialSession.evidence;
+
+  // Build evidence from the session data if available, otherwise use the demo evidence
+  const [sessionEvidence, setSessionEvidence] = useState<AnswerEvidence | null>(() => {
+    if (originalQuestion && sessionId !== 'dqa_001') {
+      return buildMockEvidence(queryType, originalQuestion);
+    }
+    return null;
+  });
+  const evidence = sessionEvidence || initialSession.evidence;
 
   const threadEndRef = useRef<HTMLDivElement>(null);
 
@@ -261,6 +257,154 @@ export default function DataQueryState() {
         break;
     }
   }, []);
+
+  // ─── Preflight / Analysis card action handler ───────────
+  const handleCardAction = useCallback((action: string, _block: DataQaResultBlock) => {
+    const now = new Date();
+    const displayTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    let xinoMsg: DataQaMessage;
+
+    if (action === 'continue_query') {
+      xinoMsg = {
+        id: `msg_xino_preflight_${Date.now()}`,
+        role: 'xino',
+        createdAt: now.toISOString(),
+        displayTime,
+        text: '查询已执行完毕，结果如下：',
+        resultBlocks: [{
+          id: `rb_preflight_result_${Date.now()}`,
+          type: 'data_table' as any,
+          title: '查询结果',
+          data: {
+            filters: ['时间=2026-04', '状态=已审核'],
+            columns: [
+              { key: 'orderNo', label: '订单号' },
+              { key: 'supplier', label: '供应商' },
+              { key: 'amount', label: '金额 (¥)' },
+            ],
+            rows: [
+              { orderNo: 'PO-20260401-001', supplier: '华东先进设备集团', amount: '¥3,420,000' },
+              { orderNo: 'PO-20260403-012', supplier: '智造科技材料有限公司', amount: '¥2,850,000' },
+              { orderNo: 'PO-20260408-045', supplier: '南方精密零部件厂', amount: '¥1,960,000' },
+            ],
+            total: 12400000,
+            previewLimit: 3,
+          },
+          actions: [
+            { id: `act_export_${Date.now()}`, label: '导出明细', actionType: 'export' as const },
+          ],
+        }],
+      };
+    } else if (action === 'narrow_scope') {
+      xinoMsg = {
+        id: `msg_xino_narrow_${Date.now()}`,
+        role: 'xino',
+        createdAt: now.toISOString(),
+        displayTime,
+        text: '请缩小查询范围，例如指定时间区间、供应商或品类，我可以重新预检。',
+        resultBlocks: [{
+          id: `rb_narrow_${Date.now()}`,
+          type: 'recommendation' as any,
+          title: '建议缩小范围',
+          data: { items: ['最近 7 天', '指定供应商', '指定品类'] },
+        }],
+      };
+    } else if (action === 'summary_only') {
+      xinoMsg = {
+        id: `msg_xino_summary_${Date.now()}`,
+        role: 'xino',
+        createdAt: now.toISOString(),
+        displayTime,
+        text: '以下是查询汇总结果：共扫描 12,400,000 行，采购金额总计 ¥12,486,320，环比增长 8.6%。',
+        resultBlocks: [{
+          id: `rb_summary_${Date.now()}`,
+          type: 'single_metric_answer' as any,
+          title: '汇总结果',
+          data: {
+            metricName: '采购金额',
+            value: 12486320,
+            formattedValue: '¥12,486,320',
+            period: '2026-04-01 至 2026-04-30',
+            mom: 0.086,
+            definition: '已审核采购订单含税金额',
+          },
+        }],
+      };
+    } else if (action === 'start_analysis') {
+      xinoMsg = {
+        id: `msg_xino_analysis_${Date.now()}`,
+        role: 'xino',
+        createdAt: now.toISOString(),
+        displayTime,
+        text: '分析已完成，以下是主要结论：',
+        resultBlocks: [
+          {
+            id: `rb_insight_${Date.now()}`,
+            type: 'insight_explanation' as any,
+            title: '原因分析',
+            data: {
+              conclusion: '采购金额上涨主要由原材料采购增加驱动。',
+              reasons: ['原材料采购增加 ¥820,000', '新增大额设备订单 ¥160,000', '核心供应商单价上涨 5.2%'],
+            },
+          },
+          {
+            id: `rb_contribution_${Date.now()}`,
+            type: 'contribution_analysis' as any,
+            title: '贡献度分析',
+            data: {
+              items: [
+                { label: '原材料采购增加', formattedValue: '¥820,000', percent: 0.76 },
+                { label: '新增大额订单', formattedValue: '¥160,000', percent: 0.15 },
+                { label: '单价上涨', formattedValue: '¥93,680', percent: 0.09 },
+              ],
+            },
+          },
+          {
+            id: `rb_breakdown_${Date.now()}`,
+            type: 'breakdown' as any,
+            title: '按品类拆解',
+            data: {
+              dimensionName: '品类',
+              metricName: '采购金额',
+              period: '2026-04',
+              items: [
+                { name: '原材料', value: '¥8,200,000', share: 65.7, trend: 'up', change: '+12.3%' },
+                { name: '设备', value: '¥2,500,000', share: 20.0, trend: 'up', change: '+5.1%' },
+                { name: '辅料', value: '¥1,786,320', share: 14.3, trend: 'down', change: '-2.4%' },
+              ],
+            },
+          },
+        ],
+      };
+    } else if (action === 'adjust_scope') {
+      xinoMsg = {
+        id: `msg_xino_adjust_${Date.now()}`,
+        role: 'xino',
+        createdAt: now.toISOString(),
+        displayTime,
+        text: '请告诉我需要调整的分析口径或范围，例如指定时间区间、只看某个品类或供应商。',
+        resultBlocks: [{
+          id: `rb_adjust_${Date.now()}`,
+          type: 'recommendation' as any,
+          title: '可调整维度',
+          data: { items: ['缩小时间范围', '指定品类', '指定供应商', '排除异常订单'] },
+        }],
+      };
+    } else if (action === 'cancel') {
+      xinoMsg = {
+        id: `msg_xino_cancel_${Date.now()}`,
+        role: 'xino',
+        createdAt: now.toISOString(),
+        displayTime,
+        text: '已取消操作，你可以继续追问其他问题。',
+      };
+    } else {
+      return;
+    }
+
+    setMessages(prev => [...prev, xinoMsg]);
+    scrollToBottom();
+  }, [scrollToBottom]);
 
   // ─── Clarification confirm handler ──────────────────────
   const handleClarify = useCallback((_selections: { metric: string; timeRange: string; scope?: string }) => {
@@ -323,6 +467,19 @@ export default function DataQueryState() {
     });
   };
 
+  // Completed mode — render after all hooks are declared
+  if (showCompleted) {
+    return (
+      <DataQaCompletedView
+        data={completedData}
+        onResume={() => {
+          setShowCompleted(false);
+          setSearchParams({}, { replace: true });
+        }}
+      />
+    );
+  }
+
   return (
     <div className="flex h-full bg-[#F8FAFC]">
       {/* Center Execution Area */}
@@ -348,6 +505,7 @@ export default function DataQueryState() {
           messages={messages}
           isXinoTyping={isXinoTyping}
           onAction={handleAction}
+          onCardAction={handleCardAction}
           onFollowup={handleFollowup}
           onClarify={handleClarify}
           onClarifyCancel={handleClarifyCancel}
@@ -434,4 +592,70 @@ function generateMockResultBlocks(question: string): DataQaResultBlock[] {
       data: { items: ['按供应商拆解', '看趋势变化', '导出明细'] },
     },
   ];
+}
+
+/** Build per-queryType evidence for the right sidebar */
+function buildMockEvidence(queryType: string, question: string): AnswerEvidence {
+  const base: AnswerEvidence = {
+    metricScope: {
+      metricName: '采购金额',
+      timeRange: { label: '最近查询', start: '2026-04-01', end: '2026-04-30' },
+      businessDomain: '供应链业务域',
+      calculationDefinition: '已审核采购订单含税金额',
+      filters: ['订单状态 = 已审核'],
+    },
+    dataEvidence: {
+      dataSource: 'supply_chain_prod',
+      sourceTable: 'dwd_scm_purchase_order_line',
+      sourceField: 'amount_tax_included',
+      timeField: 'po_approved_date',
+      updatedAt: new Date().toISOString(),
+      permissionStatus: 'queryable',
+      qualityStatus: 'passed',
+      confidence: 'high',
+      confidenceReasons: ['指标口径已注册', '来源表为 DWD 明细表'],
+    },
+    queryPlan: {
+      steps: ['匹配指标', '确定时间范围', '选择事实表', '聚合查询'],
+      sql: 'SELECT SUM(amount_tax_included) AS purchase_amount\nFROM supply_chain_prod.dwd_scm_purchase_order_line\nWHERE po_approved_date BETWEEN \'2026-04-01\' AND \'2026-04-30\'\n  AND order_status = \'approved\';',
+      execution: { durationMs: 2300, scannedRows: 184320, cacheStatus: 'miss' },
+      defaultCollapsed: true,
+    },
+    followupContext: { questions: [question] },
+  };
+
+  if (queryType === 'detail_export') {
+    base.metricScope.metricName = '采购明细';
+    base.metricScope.calculationDefinition = '导出采购订单行明细';
+    base.dataEvidence.permissionStatus = 'restricted';
+    base.dataEvidence.confidenceReasons = ['来源表为 DWD 明细表', '数据量较大，导出受限'];
+    base.queryPlan.execution.scannedRows = 12400000;
+    base.queryPlan.steps = ['扫描全量明细行', '应用过滤条件', '返回结果集'];
+  } else if (queryType === 'analysis_plan') {
+    base.metricScope.metricName = '采购分析';
+    base.metricScope.calculationDefinition = '多维度归因分析';
+    base.dataEvidence.confidence = 'medium';
+    base.dataEvidence.confidenceReasons = ['分析口径包含多表关联', '部分维度为估算'];
+    base.queryPlan.steps = ['匹配分析维度', '多表 JOIN', '聚合计算', '归因分析'];
+    base.followupContext.currentAnalysisFocus = '采购金额变化归因';
+  } else if (queryType === 'ranking') {
+    base.metricScope.metricName = '采购金额排名';
+    base.metricScope.calculationDefinition = '按供应商维度的采购金额排名';
+    base.dataEvidence.sourceField = 'amount_tax_included, supplier_name';
+    base.dataEvidence.relatedDimensions = ['dim_supplier'];
+    base.queryPlan.steps = ['匹配排名维度', '按供应商分组', '排序取 Top N'];
+  } else if (queryType === 'breakdown') {
+    base.metricScope.metricName = '采购金额拆解';
+    base.metricScope.calculationDefinition = '按指定维度拆解采购金额';
+    base.dataEvidence.sourceField = 'amount_tax_included, supplier_name, category_name';
+    base.dataEvidence.relatedDimensions = ['dim_supplier', 'dim_category'];
+    base.queryPlan.steps = ['匹配拆解维度', '按维度分组', '聚合计算', '返回拆解结果'];
+  } else if (queryType === 'clarification') {
+    base.metricScope.metricName = '待确认';
+    base.metricScope.calculationDefinition = '口径待用户确认';
+    base.dataEvidence.confidence = 'low';
+    base.dataEvidence.confidenceReasons = ['问题含糊，需确认指标口径'];
+  }
+
+  return base;
 }

@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { Brain, Clock, FileText, ChevronRight, CheckCircle2 } from 'lucide-react';
 import type { DataQaResultBlock } from '@/types';
 
-export default function AnalysisPlanCard({ block }: { block: DataQaResultBlock }) {
+export default function AnalysisPlanCard({
+  block,
+  onAction,
+}: {
+  block: DataQaResultBlock;
+  onAction?: (action: string, block: DataQaResultBlock) => void;
+}) {
   const [status, setStatus] = useState<'pending' | 'started' | 'cancelled'>('pending');
   const { data } = block;
   const directions = (data.analysisDirections as string[]) || [];
@@ -27,6 +33,15 @@ export default function AnalysisPlanCard({ block }: { block: DataQaResultBlock }
       </div>
     );
   }
+
+  const handleAction = (action: string) => {
+    if (action === 'cancel') {
+      setStatus('cancelled');
+    } else if (action === 'start_analysis') {
+      setStatus('started');
+    }
+    onAction?.(action, block);
+  };
 
   return (
     <div className="border border-blue-200 rounded-xl overflow-hidden shadow-sm bg-white">
@@ -58,15 +73,21 @@ export default function AnalysisPlanCard({ block }: { block: DataQaResultBlock }
         </div>
         <div className="flex items-center gap-2 pt-2">
           <button
-            onClick={() => setStatus('started')}
+            onClick={() => handleAction('start_analysis')}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1"
           >
             开始分析 <ChevronRight size={14} />
           </button>
-          <button className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-[13px] font-medium transition-colors">
+          <button
+            onClick={() => handleAction('adjust_scope')}
+            className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-[13px] font-medium transition-colors"
+          >
             调整范围
           </button>
-          <button className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-[13px] font-medium transition-colors">
+          <button
+            onClick={() => handleAction('summary_only')}
+            className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-[13px] font-medium transition-colors"
+          >
             只看汇总
           </button>
         </div>

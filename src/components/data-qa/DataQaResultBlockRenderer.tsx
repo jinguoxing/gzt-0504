@@ -25,12 +25,14 @@ export type OnClarify = (selections: { metric: string; timeRange: string; scope?
 export default function DataQaResultBlockRenderer({
   block,
   onAction,
+  onCardAction,
   onFollowup,
   onClarify,
   onClarifyCancel,
 }: {
   block: DataQaResultBlock;
   onAction?: OnAction;
+  onCardAction?: (action: string, block: DataQaResultBlock) => void;
   onFollowup?: OnFollowup;
   onClarify?: OnClarify;
   onClarifyCancel?: () => void;
@@ -55,9 +57,9 @@ export default function DataQaResultBlockRenderer({
     case 'clarification':
       return <ClarificationCard block={block} onConfirm={onClarify} onCancel={onClarifyCancel} />;
     case 'query_preflight':
-      return <QueryPreflightCard block={block} />;
+      return <QueryPreflightCard block={block} onAction={onCardAction} />;
     case 'analysis_plan':
-      return <AnalysisPlanCard block={block} />;
+      return <AnalysisPlanCard block={block} onAction={onCardAction} />;
     case 'ranking':
       return <RankingCard block={block} />;
     case 'breakdown':

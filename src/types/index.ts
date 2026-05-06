@@ -19,7 +19,10 @@ export type DataQaQueryType =
   | 'insight'
   | 'metric_definition'
   | 'data_lookup'
-  | 'detail_table';
+  | 'detail_table'
+  | 'detail_export'
+  | 'analysis_plan'
+  | 'clarification';
 
 export type DataQaSessionStatus =
   | 'answering'

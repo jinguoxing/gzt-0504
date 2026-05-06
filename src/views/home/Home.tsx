@@ -96,7 +96,9 @@ const SCENARIO_ICON_MAP: Record<string, React.ElementType> = {
 const SCENARIOS = (mockData as any).scenarios.map((s: any) => ({
   ...s,
   icon: SCENARIO_ICON_MAP[s.icon] || Database,
-  path: s.key === 'data-query' ? dataQaPath('dqa_001') : undefined,
+  // data-query scenario card focuses the input with a sample question instead of jumping to demo
+  path: s.key === 'data-query' ? undefined : undefined,
+  sampleQuestion: s.key === 'data-query' ? '上个月采购金额是多少？' : undefined,
 }));
 
 const WEAK_ACTION_ICONS: Record<string, React.ElementType> = {
@@ -316,6 +318,11 @@ export default function Home() {
   };
 
   const handleScenarioClick = (scenario: any) => {
+    if (scenario.sampleQuestion) {
+      // Fill the input with a sample question and focus — user must explicitly send
+      setInputValue(scenario.sampleQuestion);
+      return;
+    }
     if (scenario.path) {
       navigate(scenario.path);
     } else if (scenario.draftId) {
