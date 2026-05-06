@@ -3,47 +3,30 @@ import { useSearchParams } from 'react-router-dom';
 import {
   ChevronRight, Check, X, Edit2, AlertTriangle, Eye, Download,
   FileText, CheckCircle2, Clock, ArrowLeft, Filter, Sparkles,
-  Table, ShieldAlert, Copy, ExternalLink
+  Table, ShieldAlert, Copy, ExternalLink, Pencil
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import mockData from '@/mock/field-review.json';
 import { confidencePercent, priorityLabel, priorityColor, statusLabel } from '@/mock/helpers';
 
-const TABS = [
-  { key: 'all', label: '全部', count: mockData.overview.pendingFields + mockData.overview.conflictFields + mockData.overview.abnormalFields + mockData.overview.processedFields },
-  { key: 'pending', label: '待确认', count: mockData.overview.pendingFields },
-  { key: 'conflict', label: '冲突', count: mockData.overview.conflictFields },
-  { key: 'abnormal', label: '异常', count: mockData.overview.abnormalFields },
-  { key: 'processed', label: '已处理', count: mockData.overview.processedFields },
-];
+// ─── Types ─────────────────────────────────────────────────────────────
 
-const FIELDS = mockData.fields.map(field => ({
-  id: field.id,
-  fieldName: field.fieldName,
-  tableName: field.tableName,
-  semanticA: field.semanticA,
-  semanticB: field.semanticB,
-  confidence: confidencePercent(field.confidence),
-  risk: field.riskLevel,
-  action: field.recommendedAction,
-  status: field.status,
-  samples: field.samples,
-  evidence: field.evidence,
-  similarFields: field.similarFields,
-}));
+interface FieldRow {
+  id: string;
+  fieldName: string;
+  tableName: string;
+  semanticA: string;
+  semanticB: string;
+  confidence: number;
+  risk: string;
+  action: string;
+  status: string;
+  samples?: string[];
+  evidence?: string[];
+  similarFields?: { fieldName: string; semantic: string; confidence: number }[];
+  confirmedSemantic?: string;
+}
 
-const STAGES = mockData.sidePanel.plan.map(stage => ({
-  name: stage.name,
-  status: stage.status,
-}));
-
-const riskColor: Record<string, string> = {
-  HIGH: 'text-red-600 bg-red-50',
-  MEDIUM: 'text-orange-600 bg-orange-50',
-  LOW: 'text-green-600 bg-green-50',
-};
-
-// ==================== Detail panel types ====================
 interface FieldDetailData {
   id: string;
   fieldName: string;
@@ -56,6 +39,7 @@ interface FieldDetailData {
   samples?: string[];
   evidence?: string[];
   similarFields?: { fieldName: string; semantic: string; confidence: number }[];
+  confirmedSemantic?: string;
 }
 
 interface IssueDetailData {
@@ -79,25 +63,63 @@ type DetailPanel =
   | { kind: 'deliverable'; data: DeliverableDetailData }
   | null;
 
-// ==================== Main Component ====================
+// ─── Constants ─────────────────────────────────────────────────────────
+
+const riskColor: Record<string, string> = {
+  HIGH: 'text-red-600 bg-red-50',
+  MEDIUM: 'text-orange-600 bg-orange-50',
+  LOW: 'text-green-600 bg-green-50',
+};
+
+const RISK_ORDER: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+
+const STATUS_FILTER_MAP: Record<string, string[]> = {
+  all: [],
+  pending: ['PENDING'],
+  conflict: ['PENDING'],
+  abnormal: ['PENDING'],
+  processed: ['CONFIRMED_A', 'CONFIRMED_B', 'EDITED', 'IGNORED'],
+};
+
+// ─── Main Component ────────────────────────────────────────────────────
 
 export default function ReviewDetail() {
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // ── State ──────────────────────────────────────────────────────────
+
+  const [fields, setFields] = useState<FieldRow[]>(() =>
+    mockData.fields.map(field => ({
+      id: field.id,
+      fieldName: field.fieldName,
+      tableName: field.tableName,
+      semanticA: field.semanticA,
+      semanticB: field.semanticB,
+      confidence: confidencePercent(field.confidence),
+      risk: field.riskLevel,
+      action: field.recommendedAction,
+      status: field.status,
+      samples: field.samples,
+      evidence: field.evidence,
+      similarFields: field.similarFields,
+    }))
+  );
+
   const [activeTab, setActiveTab] = useState('conflict');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [sortMode, setSortMode] = useState<'default' | 'risk' | 'impact'>('default');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [riskFilter, setRiskFilter] = useState<string>('ALL');
+  const [tableFilter, setTableFilter] = useState<string>('ALL');
 
   // URL-driven state
   const fieldIdParam = searchParams.get('fieldId');
   const issueIdParam = searchParams.get('issueId');
   const deliverableIdParam = searchParams.get('deliverableId');
 
-  // Resolve initial field from URL or default
-  const initialField = useMemo(() => {
-    if (fieldIdParam) return FIELDS.find(f => f.id === fieldIdParam) || FIELDS[0];
-    return FIELDS[0];
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const [selectedField, setSelectedField] = useState(initialField);
+  const [selectedFieldId, setSelectedFieldId] = useState<string>(
+    () => fieldIdParam || mockData.fields[0]?.id || ''
+  );
 
   const [detailPanel, setDetailPanel] = useState<DetailPanel>(() => {
     if (issueIdParam) {
@@ -111,6 +133,8 @@ export default function ReviewDetail() {
     return null;
   });
 
+  // ── Helpers ─────────────────────────────────────────────────────────
+
   const updateUrl = useCallback((params: Record<string, string | null>) => {
     setSearchParams(prev => {
       prev.delete('fieldId');
@@ -123,18 +147,128 @@ export default function ReviewDetail() {
     }, { replace: true });
   }, [setSearchParams]);
 
+  const selectedField = useMemo(() =>
+    fields.find(f => f.id === selectedFieldId) || null
+  , [fields, selectedFieldId]);
+
+  // ── Computed: tabs with live counts ──────────────────────────────────
+
+  const tabs = useMemo(() => {
+    const pending = fields.filter(f => f.status === 'PENDING').length;
+    const conflict = fields.filter(f => f.status === 'PENDING' && f.confidence < 70).length;
+    const abnormal = fields.filter(f => f.status === 'PENDING' && f.confidence >= 70).length;
+    const processed = fields.filter(f => f.status !== 'PENDING').length;
+    return [
+      { key: 'all', label: '全部', count: fields.length },
+      { key: 'pending', label: '待确认', count: pending },
+      { key: 'conflict', label: '冲突', count: conflict },
+      { key: 'abnormal', label: '异常', count: abnormal },
+      { key: 'processed', label: '已处理', count: processed },
+    ];
+  }, [fields]);
+
+  // ── Computed: filtered + sorted fields ───────────────────────────────
+
+  const filteredFields = useMemo(() => {
+    let result = [...fields];
+
+    // Tab filter
+    if (activeTab === 'pending') result = result.filter(f => f.status === 'PENDING');
+    else if (activeTab === 'conflict') result = result.filter(f => f.status === 'PENDING' && f.confidence < 70);
+    else if (activeTab === 'abnormal') result = result.filter(f => f.status === 'PENDING' && f.confidence >= 70);
+    else if (activeTab === 'processed') result = result.filter(f => f.status !== 'PENDING');
+
+    // Risk filter
+    if (riskFilter !== 'ALL') result = result.filter(f => f.risk === riskFilter);
+
+    // Table filter
+    if (tableFilter !== 'ALL') result = result.filter(f => f.tableName === tableFilter);
+
+    // Sort
+    if (sortMode === 'risk') {
+      result.sort((a, b) => (RISK_ORDER[a.risk] ?? 9) - (RISK_ORDER[b.risk] ?? 9));
+    } else if (sortMode === 'impact') {
+      result.sort((a, b) => a.confidence - b.confidence);
+    } else {
+      result.sort((a, b) => (RISK_ORDER[a.risk] ?? 9) - (RISK_ORDER[b.risk] ?? 9) || a.confidence - b.confidence);
+    }
+
+    return result;
+  }, [fields, activeTab, riskFilter, tableFilter, sortMode]);
+
+  // ── Computed: filter options ─────────────────────────────────────────
+
+  const tableOptions = useMemo(() => {
+    const tables = [...new Set(fields.map(f => f.tableName))];
+    return tables;
+  }, [fields]);
+
+  // ── Computed: overview stats (dynamic) ───────────────────────────────
+
+  const overviewStats = useMemo(() => ({
+    pending: fields.filter(f => f.status === 'PENDING').length,
+    conflict: fields.filter(f => f.status === 'PENDING' && f.confidence < 70).length,
+    abnormal: fields.filter(f => f.status === 'PENDING' && f.confidence >= 70).length,
+    processed: fields.filter(f => f.status !== 'PENDING').length,
+  }), [fields]);
+
+  // ── Handlers: field actions ──────────────────────────────────────────
+
+  const handleConfirmA = (fieldId: string) => {
+    setFields(prev => prev.map(f =>
+      f.id === fieldId ? { ...f, status: 'CONFIRMED_A', confirmedSemantic: f.semanticA } : f
+    ));
+  };
+
+  const handleConfirmB = (fieldId: string) => {
+    setFields(prev => prev.map(f =>
+      f.id === fieldId ? { ...f, status: 'CONFIRMED_B', confirmedSemantic: f.semanticB } : f
+    ));
+  };
+
+  const handleEdit = (fieldId: string) => {
+    setFields(prev => prev.map(f =>
+      f.id === fieldId ? { ...f, status: 'EDITED' } : f
+    ));
+  };
+
+  // ── Handlers: batch operations ───────────────────────────────────────
+
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
-  const handleFieldRowClick = (field: typeof FIELDS[0]) => {
-    setSelectedField(field);
-    if (detailPanel) {
-      setDetailPanel(null);
-      updateUrl({ fieldId: field.id });
-    } else {
-      updateUrl({ fieldId: field.id });
-    }
+  const toggleSelectAll = () => {
+    const visibleIds = filteredFields.map(f => f.id);
+    const allSelected = visibleIds.length > 0 && visibleIds.every(id => selectedIds.includes(id));
+    setSelectedIds(allSelected
+      ? selectedIds.filter(id => !visibleIds.includes(id))
+      : [...new Set([...selectedIds, ...visibleIds])]
+    );
+  };
+
+  const handleBatchConfirm = () => {
+    setFields(prev => prev.map(f =>
+      selectedIds.includes(f.id) && f.status === 'PENDING'
+        ? { ...f, status: 'CONFIRMED_A', confirmedSemantic: f.semanticA } : f
+    ));
+    setSelectedIds([]);
+  };
+
+  const handleBatchIgnore = () => {
+    setFields(prev => prev.map(f =>
+      selectedIds.includes(f.id) && f.status === 'PENDING'
+        ? { ...f, status: 'IGNORED' } : f
+    ));
+    setSelectedIds([]);
+  };
+
+  // ── Handlers: row / panel clicks ─────────────────────────────────────
+
+  const handleFieldRowClick = (field: FieldRow) => {
+    setSelectedFieldId(field.id);
+    setDetailPanel(null);
+    updateUrl({ fieldId: field.id });
   };
 
   const handleIssueClick = (risk: { id: string; title: string; level: string }) => {
@@ -155,8 +289,39 @@ export default function ReviewDetail() {
 
   const handleDetailBack = () => {
     setDetailPanel(null);
-    updateUrl({ fieldId: selectedField.id });
+    updateUrl({ fieldId: selectedFieldId });
   };
+
+  // ── Handlers: Xino suggestions ───────────────────────────────────────
+
+  const handleSortByRisk = () => {
+    setSortMode('risk');
+    setActiveTab('all');
+  };
+
+  const handleShowHighRisk = () => {
+    setRiskFilter('HIGH');
+    setActiveTab('all');
+  };
+
+  const handleSortByImpact = () => {
+    setSortMode('impact');
+    setActiveTab('all');
+  };
+
+  // ── Handlers: issue detail actions ───────────────────────────────────
+
+  const handleIssueIgnore = () => {
+    handleDetailBack();
+  };
+
+  const handleIssueProcess = () => {
+    // Navigate to conflict tab to process
+    setActiveTab('conflict');
+    handleDetailBack();
+  };
+
+  // ── Render ───────────────────────────────────────────────────────────
 
   return (
     <div className="flex h-full bg-[#F8FAFC]">
@@ -181,10 +346,12 @@ export default function ReviewDetail() {
             <div className="flex items-center gap-2">
               {selectedIds.length > 0 && (
                 <>
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                  <button onClick={handleBatchConfirm}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
                     <Check size={14} />批量确认
                   </button>
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                  <button onClick={handleBatchIgnore}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                     <X size={14} />批量忽略
                   </button>
                 </>
@@ -200,10 +367,10 @@ export default function ReviewDetail() {
         <div className="px-8 py-4 bg-white border-b border-gray-100">
           <div className="grid grid-cols-4 gap-4">
             {[
-              { label: '待确认字段', value: mockData.overview.pendingFields, color: 'text-orange-600' },
-              { label: '冲突字段', value: mockData.overview.conflictFields, color: 'text-red-600' },
-              { label: '异常字段', value: mockData.overview.abnormalFields, color: 'text-orange-600' },
-              { label: '已处理', value: mockData.overview.processedFields, color: 'text-green-600' },
+              { label: '待确认字段', value: overviewStats.pending, color: 'text-orange-600' },
+              { label: '冲突字段', value: overviewStats.conflict, color: 'text-red-600' },
+              { label: '异常字段', value: overviewStats.abnormal, color: 'text-orange-600' },
+              { label: '已处理', value: overviewStats.processed, color: 'text-green-600' },
             ].map(item => (
               <div key={item.label} className="flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-3">
                 <span className={cn('text-[20px] font-bold', item.color)}>{item.value}</span>
@@ -215,22 +382,59 @@ export default function ReviewDetail() {
 
         {/* Filter Tabs */}
         <div className="px-8 py-3 bg-white border-b border-gray-200 flex items-center gap-1">
-          {TABS.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+          {tabs.map(tab => (
+            <button key={tab.key}
+              onClick={() => { setActiveTab(tab.key); setRiskFilter('ALL'); setTableFilter('ALL'); }}
               className={cn(
                 'px-4 py-2 rounded-lg text-[13px] font-medium transition-colors',
                 activeTab === tab.key ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
-              )}
-            >
+              )}>
               {tab.label} ({tab.count})
             </button>
           ))}
           <div className="flex-1" />
-          <button className="flex items-center gap-1.5 text-[13px] text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-            <Filter size={14} />筛选
-          </button>
+          {/* Filter dropdown */}
+          <div className="relative">
+            <button onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+              className={cn("flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-lg transition-colors",
+                riskFilter !== 'ALL' || tableFilter !== 'ALL' ? "text-blue-600 bg-blue-50" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100")}>
+              <Filter size={14} />筛选
+              {(riskFilter !== 'ALL' || tableFilter !== 'ALL') && <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
+            </button>
+            {showFilterDropdown && (
+              <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-3 px-4 w-56">
+                <div className="mb-3">
+                  <span className="text-[12px] text-gray-400 font-medium">风险级别</span>
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {['ALL', 'HIGH', 'MEDIUM', 'LOW'].map(v => (
+                      <button key={v} onClick={() => setRiskFilter(v)}
+                        className={cn("text-[12px] px-2 py-1 rounded transition-colors",
+                          riskFilter === v ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-100')}>
+                        {v === 'ALL' ? '全部' : priorityLabel(v)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[12px] text-gray-400 font-medium">所在表</span>
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    <button onClick={() => setTableFilter('ALL')}
+                      className={cn("text-[12px] px-2 py-1 rounded transition-colors",
+                        tableFilter === 'ALL' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-100')}>
+                      全部
+                    </button>
+                    {tableOptions.map(t => (
+                      <button key={t} onClick={() => setTableFilter(t)}
+                        className={cn("text-[12px] px-2 py-1 rounded transition-colors",
+                          tableFilter === t ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-100')}>
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Table */}
@@ -238,7 +442,12 @@ export default function ReviewDetail() {
           <table className="w-full">
             <thead>
               <tr className="text-[12px] text-gray-400 font-medium uppercase tracking-wide border-b border-gray-100">
-                <th className="w-10 py-3 text-left"><input type="checkbox" className="rounded" /></th>
+                <th className="w-10 py-3 text-left">
+                  <input type="checkbox"
+                    checked={filteredFields.length > 0 && filteredFields.every(f => selectedIds.includes(f.id))}
+                    onChange={toggleSelectAll}
+                    className="rounded" />
+                </th>
                 <th className="py-3 text-left">字段名</th>
                 <th className="py-3 text-left">所在表</th>
                 <th className="py-3 text-left">推断语义 A</th>
@@ -249,44 +458,67 @@ export default function ReviewDetail() {
               </tr>
             </thead>
             <tbody>
-              {FIELDS.map(field => (
-                <tr
-                  key={field.id}
-                  onClick={() => handleFieldRowClick(field)}
-                  className={cn(
-                    'border-b border-gray-50 cursor-pointer transition-colors',
-                    selectedField?.id === field.id ? 'bg-blue-50' : 'hover:bg-gray-50'
-                  )}
-                >
-                  <td className="py-3" onClick={e => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(field.id)}
-                      onChange={() => toggleSelect(field.id)}
-                      className="rounded"
-                    />
-                  </td>
-                  <td className="py-3 text-[13px] font-semibold text-gray-900">{field.fieldName}</td>
-                  <td className="py-3 text-[13px] text-gray-500">{field.tableName}</td>
-                  <td className="py-3 text-[13px] text-gray-700">{field.semanticA}</td>
-                  <td className="py-3 text-[13px] text-gray-500">{field.semanticB}</td>
-                  <td className="py-3 text-[13px] text-right font-medium text-gray-700">{field.confidence}%</td>
-                  <td className="py-3 text-center">
-                    <span className={cn('text-[12px] font-medium px-2 py-0.5 rounded', riskColor[field.risk])}>
-                      {priorityLabel(field.risk)}
-                    </span>
-                  </td>
-                  <td className="py-3 text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <button className="text-[12px] text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-colors">确认A</button>
-                      <button className="text-[12px] text-emerald-600 hover:bg-emerald-50 px-2 py-1 rounded transition-colors">确认B</button>
-                      <button className="text-[12px] text-gray-500 hover:bg-gray-100 px-2 py-1 rounded transition-colors">
-                        <Edit2 size={12} />
-                      </button>
-                    </div>
+              {filteredFields.map(field => {
+                const isProcessed = field.status !== 'PENDING';
+                return (
+                  <tr key={field.id}
+                    onClick={() => handleFieldRowClick(field)}
+                    className={cn(
+                      'border-b border-gray-50 cursor-pointer transition-colors',
+                      selectedField?.id === field.id ? 'bg-blue-50' : 'hover:bg-gray-50',
+                      isProcessed && 'opacity-60'
+                    )}>
+                    <td className="py-3" onClick={e => e.stopPropagation()}>
+                      <input type="checkbox" checked={selectedIds.includes(field.id)}
+                        onChange={() => toggleSelect(field.id)} className="rounded"
+                        disabled={isProcessed} />
+                    </td>
+                    <td className="py-3">
+                      <div className="text-[13px] font-semibold text-gray-900">{field.fieldName}</div>
+                      {field.confirmedSemantic && <div className="text-[11px] text-green-600 mt-0.5">→ {field.confirmedSemantic}</div>}
+                    </td>
+                    <td className="py-3 text-[13px] text-gray-500">{field.tableName}</td>
+                    <td className="py-3 text-[13px] text-gray-700">{field.semanticA}</td>
+                    <td className="py-3 text-[13px] text-gray-500">{field.semanticB}</td>
+                    <td className="py-3 text-[13px] text-right font-medium text-gray-700">{field.confidence}%</td>
+                    <td className="py-3 text-center">
+                      <span className={cn('text-[12px] font-medium px-2 py-0.5 rounded', riskColor[field.risk])}>
+                        {priorityLabel(field.risk)}
+                      </span>
+                    </td>
+                    <td className="py-3 text-center" onClick={e => e.stopPropagation()}>
+                      {isProcessed ? (
+                        <span className={cn('text-[12px] font-medium px-2 py-1 rounded',
+                          field.status === 'IGNORED' ? 'text-gray-400' : 'text-green-600 bg-green-50')}>
+                          {field.status === 'CONFIRMED_A' ? '已确认 A' :
+                           field.status === 'CONFIRMED_B' ? '已确认 B' :
+                           field.status === 'EDITED' ? '已编辑' :
+                           field.status === 'IGNORED' ? '已忽略' : field.status}
+                        </span>
+                      ) : (
+                        <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => handleConfirmA(field.id)}
+                            className="text-[12px] text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-colors">确认A</button>
+                          <button onClick={() => handleConfirmB(field.id)}
+                            className="text-[12px] text-emerald-600 hover:bg-emerald-50 px-2 py-1 rounded transition-colors">确认B</button>
+                          <button onClick={() => handleEdit(field.id)}
+                            className="text-[12px] text-gray-500 hover:bg-gray-100 px-2 py-1 rounded transition-colors">
+                            <Edit2 size={12} />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {filteredFields.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center">
+                    <CheckCircle2 size={28} className="mx-auto text-green-400 mb-2" />
+                    <p className="text-[14px] text-gray-500">当前分类下没有待处理字段</p>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -299,12 +531,24 @@ export default function ReviewDetail() {
             </div>
             <div className="flex-1">
               <p className="text-[13px] text-blue-800">
-                当前有 {mockData.overview.conflictFields} 个冲突字段，建议优先处理风险级别为<b>高/中</b>且置信度差异较大的字段。
+                当前有 {overviewStats.conflict} 个冲突字段，建议优先处理风险级别为<b>高/中</b>且置信度差异较大的字段。
               </p>
               <div className="flex items-center gap-2 mt-2">
-                <button className="text-[12px] font-medium text-blue-600 bg-white px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors">推荐排序</button>
-                <button className="text-[12px] font-medium text-blue-600 bg-white px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors">仅看高风险</button>
-                <button className="text-[12px] font-medium text-blue-600 bg-white px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors">按影响范围排序</button>
+                <button onClick={handleSortByRisk}
+                  className={cn("text-[12px] font-medium px-3 py-1.5 rounded-lg transition-colors",
+                    sortMode === 'risk' ? 'bg-blue-600 text-white' : 'text-blue-600 bg-white hover:bg-blue-100')}>
+                  推荐排序
+                </button>
+                <button onClick={handleShowHighRisk}
+                  className={cn("text-[12px] font-medium px-3 py-1.5 rounded-lg transition-colors",
+                    riskFilter === 'HIGH' ? 'bg-blue-600 text-white' : 'text-blue-600 bg-white hover:bg-blue-100')}>
+                  仅看高风险
+                </button>
+                <button onClick={handleSortByImpact}
+                  className={cn("text-[12px] font-medium px-3 py-1.5 rounded-lg transition-colors",
+                    sortMode === 'impact' ? 'bg-blue-600 text-white' : 'text-blue-600 bg-white hover:bg-blue-100')}>
+                  按影响范围排序
+                </button>
               </div>
             </div>
           </div>
@@ -314,10 +558,13 @@ export default function ReviewDetail() {
       {/* Right: Detail Panel */}
       <div className="w-[400px] flex flex-col bg-white border-l border-gray-200 flex-shrink-0 overflow-hidden">
         {detailPanel ? (
-          <ReviewDetailPanelRouter panel={detailPanel} onBack={handleDetailBack} />
+          <ReviewDetailPanelRouter panel={detailPanel} onBack={handleDetailBack} onIssueIgnore={handleIssueIgnore} onIssueProcess={handleIssueProcess} />
         ) : selectedField ? (
           <ReviewFieldDetailPanel
             field={selectedField}
+            onConfirmA={() => handleConfirmA(selectedField.id)}
+            onConfirmB={() => handleConfirmB(selectedField.id)}
+            onEdit={() => handleEdit(selectedField.id)}
             onIssueClick={handleIssueClick}
             onDeliverableClick={handleDeliverableClick}
           />
@@ -331,27 +578,46 @@ export default function ReviewDetail() {
   );
 }
 
-// ==================== Detail Panel Router ====================
+// ─── Detail Panel Router ───────────────────────────────────────────────
 
-function ReviewDetailPanelRouter({ panel, onBack }: { panel: NonNullable<DetailPanel>; onBack: () => void }) {
-  if (panel.kind === 'issue') return <ReviewIssueDetailPanel data={panel.data} onBack={onBack} />;
+function ReviewDetailPanelRouter({ panel, onBack, onIssueIgnore, onIssueProcess }: {
+  panel: NonNullable<DetailPanel>;
+  onBack: () => void;
+  onIssueIgnore: () => void;
+  onIssueProcess: () => void;
+}) {
+  if (panel.kind === 'issue') return <ReviewIssueDetailPanel data={panel.data} onBack={onBack} onIgnore={onIssueIgnore} onProcess={onIssueProcess} />;
   if (panel.kind === 'deliverable') return <ReviewDeliverableDetailPanel data={panel.data} onBack={onBack} />;
   return null;
 }
 
-// ==================== Field Detail Panel (default right panel) ====================
+// ─── Field Detail Panel ────────────────────────────────────────────────
 
-function ReviewFieldDetailPanel({ field, onIssueClick, onDeliverableClick }: {
-  field: typeof FIELDS[0];
+function ReviewFieldDetailPanel({ field, onConfirmA, onConfirmB, onEdit, onIssueClick, onDeliverableClick }: {
+  field: FieldRow;
+  onConfirmA: () => void;
+  onConfirmB: () => void;
+  onEdit: () => void;
   onIssueClick: (risk: { id: string; title: string; level: string }) => void;
   onDeliverableClick: (deliv: { id: string; name: string; type: string; description?: string; sizeBytes?: number }) => void;
 }) {
+  const isProcessed = field.status !== 'PENDING';
+
   return (
     <div className="flex-1 overflow-y-auto p-6 animate-in slide-in-from-right-2 duration-200">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h3 className="text-[16px] font-bold text-gray-900">{field.fieldName}</h3>
-          <span className="text-[12px] font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">冲突</span>
+          {isProcessed ? (
+            <span className="text-[12px] font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">
+              {field.status === 'CONFIRMED_A' ? '已确认 A' :
+               field.status === 'CONFIRMED_B' ? '已确认 B' :
+               field.status === 'EDITED' ? '已编辑' :
+               field.status === 'IGNORED' ? '已忽略' : field.status}
+            </span>
+          ) : (
+            <span className="text-[12px] font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">冲突</span>
+          )}
         </div>
       </div>
 
@@ -362,6 +628,14 @@ function ReviewFieldDetailPanel({ field, onIssueClick, onDeliverableClick }: {
           <div className="bg-gray-50 rounded-lg px-3 py-2"><span className="text-gray-400">置信度</span><br /><span className="text-gray-700 font-medium">{field.confidence}%</span></div>
           <div className="bg-gray-50 rounded-lg px-3 py-2"><span className="text-gray-400">风险级别</span><br /><span className={cn('font-medium', riskColor[field.risk])}>{priorityLabel(field.risk)}</span></div>
         </div>
+
+        {/* Confirmed semantic display */}
+        {field.confirmedSemantic && (
+          <div className="bg-green-50 border border-green-100 rounded-lg px-3 py-2">
+            <span className="text-green-600 text-[12px]">已确认语义</span><br />
+            <span className="text-gray-900 font-medium">{field.confirmedSemantic}</span>
+          </div>
+        )}
 
         {field.samples && field.samples.length > 0 && (
           <div>
@@ -413,11 +687,31 @@ function ReviewFieldDetailPanel({ field, onIssueClick, onDeliverableClick }: {
           <div className="space-y-2 text-[12px] text-gray-500">
             <div className="flex items-center gap-2"><Clock size={12} /> 09:32 Xino 自动识别为冲突字段</div>
             <div className="flex items-center gap-2"><Eye size={12} /> 09:35 李桐 查看并开始处理</div>
+            {isProcessed && <div className="flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> 09:40 李桐 确认语义</div>}
           </div>
         </div>
       </div>
 
-      {/* Risks — clickable to detail */}
+      {/* Action buttons for pending fields */}
+      {!isProcessed && (
+        <div className="border-t border-gray-100 mt-6 pt-4 space-y-2">
+          <h4 className="text-[12px] text-gray-400 font-medium mb-3">处理操作</h4>
+          <button onClick={onConfirmA}
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-semibold py-2.5 rounded-lg transition-colors">
+            <Check size={14} /> 确认为「{field.semanticA}」
+          </button>
+          <button onClick={onConfirmB}
+            className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-semibold py-2.5 rounded-lg transition-colors">
+            <Check size={14} /> 确认为「{field.semanticB}」
+          </button>
+          <button onClick={onEdit}
+            className="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-[13px] font-semibold py-2.5 rounded-lg transition-colors">
+            <Pencil size={14} /> 手动编辑
+          </button>
+        </div>
+      )}
+
+      {/* Risks */}
       <div className="border-t border-gray-100 mt-6 pt-4">
         <h4 className="flex items-center gap-2 text-[13px] font-semibold text-gray-700 mb-3">
           <AlertTriangle size={14} className="text-red-500" />
@@ -427,11 +721,8 @@ function ReviewFieldDetailPanel({ field, onIssueClick, onDeliverableClick }: {
           {mockData.sidePanel.risks.map((risk) => {
             const isHigh = risk.level === 'HIGH';
             return (
-              <div
-                key={risk.id}
-                onClick={() => onIssueClick(risk)}
-                className={cn("border rounded-lg p-3 flex justify-between items-center cursor-pointer transition-colors", isHigh ? "bg-red-50 border-red-100 hover:bg-red-100" : "bg-amber-50 border-amber-100 hover:bg-amber-100")}
-              >
+              <div key={risk.id} onClick={() => onIssueClick(risk)}
+                className={cn("border rounded-lg p-3 flex justify-between items-center cursor-pointer transition-colors", isHigh ? "bg-red-50 border-red-100 hover:bg-red-100" : "bg-amber-50 border-amber-100 hover:bg-amber-100")}>
                 <div className="flex items-center gap-2">
                   <div className={cn("w-6 h-6 rounded-full bg-white flex items-center justify-center font-bold text-[11px] shadow-sm", isHigh ? "text-red-600" : "text-amber-600")}>
                     {isHigh ? '5' : '18'}
@@ -445,16 +736,14 @@ function ReviewFieldDetailPanel({ field, onIssueClick, onDeliverableClick }: {
         </div>
       </div>
 
-      {/* Deliverables — clickable to detail */}
+      {/* Deliverables */}
       <div className="border-t border-gray-100 mt-4 pt-4">
         <h4 className="text-[13px] font-semibold text-gray-700 mb-3">最新交付物</h4>
         <div className="space-y-2">
           {mockData.sidePanel.deliverables.map((item) => (
-            <div
-              key={item.id}
+            <div key={item.id}
               onClick={() => onDeliverableClick({ id: item.id, name: item.name, type: item.type, description: (item as any).description, sizeBytes: (item as any).sizeBytes })}
-              className="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-lg hover:border-blue-300 hover:bg-blue-50/50 cursor-pointer transition-colors"
-            >
+              className="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-lg hover:border-blue-300 hover:bg-blue-50/50 cursor-pointer transition-colors">
               <div className="flex items-start gap-3 overflow-hidden">
                 <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 text-blue-600 mt-0.5">
                   <FileText size={14} />
@@ -474,7 +763,7 @@ function ReviewFieldDetailPanel({ field, onIssueClick, onDeliverableClick }: {
       <div className="border-t border-gray-100 mt-4 pt-4">
         <h4 className="text-[12px] text-gray-400 font-medium mb-3">任务计划</h4>
         <div className="space-y-2">
-          {STAGES.map((stage, idx) => (
+          {mockData.sidePanel.plan.map((stage, idx) => (
             <div key={idx} className="flex items-center gap-2 text-[12px]">
               {stage.status === 'COMPLETED' ? <CheckCircle2 size={14} className="text-green-500" /> :
                stage.status === 'RUNNING' ? <div className="w-3.5 h-3.5 rounded-full border-2 border-blue-500 bg-blue-100" /> :
@@ -491,9 +780,11 @@ function ReviewFieldDetailPanel({ field, onIssueClick, onDeliverableClick }: {
   );
 }
 
-// ==================== Issue Detail Panel ====================
+// ─── Issue Detail Panel ────────────────────────────────────────────────
 
-function ReviewIssueDetailPanel({ data, onBack }: { data: IssueDetailData; onBack: () => void }) {
+function ReviewIssueDetailPanel({ data, onBack, onIgnore, onProcess }: {
+  data: IssueDetailData; onBack: () => void; onIgnore: () => void; onProcess: () => void;
+}) {
   const isHigh = data.severity === 'high';
 
   return (
@@ -556,14 +847,14 @@ function ReviewIssueDetailPanel({ data, onBack }: { data: IssueDetailData; onBac
         </div>
       </div>
       <div className="p-4 border-t border-gray-200 bg-gray-50 flex gap-3 flex-shrink-0">
-        <button className="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-[13px] font-semibold py-2 rounded-lg transition-colors">忽略</button>
-        <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-semibold py-2 rounded-lg transition-colors">立即处理</button>
+        <button onClick={onIgnore} className="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-[13px] font-semibold py-2 rounded-lg transition-colors">忽略</button>
+        <button onClick={onProcess} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-semibold py-2 rounded-lg transition-colors">立即处理</button>
       </div>
     </div>
   );
 }
 
-// ==================== Deliverable Detail Panel ====================
+// ─── Deliverable Detail Panel ──────────────────────────────────────────
 
 function ReviewDeliverableDetailPanel({ data, onBack }: { data: DeliverableDetailData; onBack: () => void }) {
   const iconConfig: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
@@ -588,7 +879,7 @@ function ReviewDeliverableDetailPanel({ data, onBack }: { data: DeliverableDetai
           </div>
           <div>
             <h4 className="text-[15px] font-bold text-gray-900">{data.name}</h4>
-            <span className="text-[12px] text-gray-500">{data.type} 文件</span>
+            <span className="text-[12px] text-gray-500">{data.type} 文件{data.sizeBytes ? ` · ${(data.sizeBytes / 1024).toFixed(0)} KB` : ''}</span>
           </div>
         </div>
 
