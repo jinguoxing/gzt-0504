@@ -1,0 +1,49 @@
+{
+  "id": "review-order-amount",
+  "title": "字段语义确认：订单金额",
+  "type": "CONFIRM",
+  "status": "PENDING",
+  "sourceTask": {
+    "id": "task-supply-chain-loop",
+    "name": "供应链语义治理闭环任务"
+  },
+  "stage": {
+    "id": "stage-field-semantic",
+    "name": "字段语义理解",
+    "index": 5,
+    "total": 8
+  },
+  "context": {
+    "fieldName": "order_amount",
+    "tableName": "fact_purchase_order",
+    "suggestedMeaning": "订单金额",
+    "confidence": 0.92,
+    "sampleValues": [
+      "12800.00",
+      "5600.50",
+      "930.00"
+    ],
+    "evidence": [
+      "字段名与金额语义匹配",
+      "业务词典命中：订单金额",
+      "样例值符合金额类型"
+    ]
+  },
+  "recommendedActions": [
+    "确认语义",
+    "修改语义",
+    "忽略字段"
+  ],
+  "activityLogs": [
+    {
+      "time": "今天 09:20",
+      "actor": "Xino",
+      "content": "生成字段语义确认事项"
+    },
+    {
+      "time": "今天 09:21",
+      "actor": "系统",
+      "content": "已分配给李桐处理"
+    }
+  ]
+}

@@ -1,0 +1,349 @@
+{
+  "stats": {
+    "total": 17,
+    "confirm": 6,
+    "approval": 4,
+    "exception": 3,
+    "resume": 4,
+    "dueSoon": 5,
+    "highPriority": 7,
+    "averageHandleDuration": "2.4h",
+    "trends": {
+      "total": 2,
+      "confirm": 1,
+      "approval": -1,
+      "exception": 1,
+      "resume": 1
+    }
+  },
+  "filters": {
+    "keyword": "",
+    "type": "ALL",
+    "status": "ALL",
+    "sourceTaskId": "ALL",
+    "initiatorId": "ALL",
+    "priority": "ALL",
+    "deadline": "ALL",
+    "sortBy": "PRIORITY",
+    "page": 1,
+    "pageSize": 10
+  },
+  "overview": {
+    "dateLabel": "今天 2024-05-20",
+    "confirmCount": 6,
+    "approvalCount": 4,
+    "exceptionCount": 3,
+    "resumableCount": 4,
+    "dueSoonCount": 5,
+    "averageHandleDuration": "2.4h"
+  },
+  "quickViews": [
+    {
+      "key": "HIGH_PRIORITY",
+      "label": "高优先级事项",
+      "count": 7,
+      "query": {
+        "priority": "HIGH"
+      }
+    },
+    {
+      "key": "DUE_TODAY",
+      "label": "今日到期",
+      "count": 5,
+      "query": {
+        "deadline": "TODAY"
+      }
+    },
+    {
+      "key": "EXCEPTION",
+      "label": "异常事项",
+      "count": 3,
+      "query": {
+        "type": "EXCEPTION"
+      }
+    },
+    {
+      "key": "CREATED_BY_ME",
+      "label": "我发起的事项",
+      "count": 4,
+      "query": {
+        "initiatorId": "me"
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "review-order-amount",
+      "title": "字段语义确认：订单金额",
+      "type": "CONFIRM",
+      "status": "PENDING",
+      "priority": "MEDIUM",
+      "sourceTaskId": "task-supply-chain-loop",
+      "sourceTaskName": "供应链语义治理闭环任务",
+      "sourceTaskType": "语义治理",
+      "stageId": "stage-field-semantic",
+      "stageName": "字段语义理解",
+      "stageIndex": 5,
+      "stageTotal": 8,
+      "initiator": {
+        "id": "xino",
+        "name": "Xino",
+        "type": "AI"
+      },
+      "assignee": {
+        "id": "liming",
+        "name": "李桐"
+      },
+      "createdAt": "2026-05-20T09:20:00+08:00",
+      "createdAtLabel": "今天 09:20",
+      "deadlineAt": "2026-05-20T18:00:00+08:00",
+      "deadlineLabel": "今天 18:00",
+      "actionText": "进入确认",
+      "actionUrl": "/tasks/task-supply-chain-loop/review/review-order-amount",
+      "riskSummary": "字段业务含义需业务确认",
+      "tags": [
+        "字段语义",
+        "采购域"
+      ]
+    },
+    {
+      "id": "review-supplier-code",
+      "title": "字段语义确认：supplier_code",
+      "type": "CONFIRM",
+      "status": "PENDING",
+      "priority": "MEDIUM",
+      "sourceTaskId": "task-supply-chain-loop",
+      "sourceTaskName": "供应链语义治理闭环任务",
+      "sourceTaskType": "语义治理",
+      "stageId": "stage-field-semantic",
+      "stageName": "字段语义理解",
+      "stageIndex": 5,
+      "stageTotal": 8,
+      "initiator": {
+        "id": "xino",
+        "name": "Xino",
+        "type": "AI"
+      },
+      "assignee": {
+        "id": "liming",
+        "name": "李桐"
+      },
+      "createdAt": "2026-05-20T09:24:00+08:00",
+      "createdAtLabel": "今天 09:24",
+      "deadlineAt": "2026-05-20T18:00:00+08:00",
+      "deadlineLabel": "今天 18:00",
+      "actionText": "进入确认",
+      "actionUrl": "/tasks/task-supply-chain-loop/review/review-supplier-code",
+      "riskSummary": "疑似供应商编码字段",
+      "tags": [
+        "字段语义",
+        "供应商"
+      ]
+    },
+    {
+      "id": "review-order-object-mapping",
+      "title": "待审核：订单对象映射修复",
+      "type": "APPROVAL",
+      "status": "WAITING_APPROVAL",
+      "priority": "HIGH",
+      "sourceTaskId": "task-order-object-fix",
+      "sourceTaskName": "订单对象映射修复任务",
+      "sourceTaskType": "对象映射",
+      "stageId": "stage-object-relation",
+      "stageName": "对象关系校验",
+      "stageIndex": 4,
+      "stageTotal": 6,
+      "initiator": {
+        "id": "zhangyue",
+        "name": "张悦",
+        "type": "USER"
+      },
+      "assignee": {
+        "id": "liming",
+        "name": "李桐"
+      },
+      "createdAt": "2026-05-20T11:18:00+08:00",
+      "createdAtLabel": "今天 11:18",
+      "deadlineAt": "2026-05-20T17:00:00+08:00",
+      "deadlineLabel": "今天 17:00",
+      "actionText": "去审核",
+      "actionUrl": "/tasks/task-order-object-fix/review/review-order-object-mapping",
+      "riskSummary": "映射修复影响订单对象关系",
+      "tags": [
+        "对象关系",
+        "待审核"
+      ]
+    },
+    {
+      "id": "review-supplier-relation",
+      "title": "待审核：供应商对象关系确认",
+      "type": "APPROVAL",
+      "status": "WAITING_APPROVAL",
+      "priority": "MEDIUM",
+      "sourceTaskId": "task-customer-semantic",
+      "sourceTaskName": "客户语义治理任务",
+      "sourceTaskType": "语义治理",
+      "stageId": "stage-object-relation",
+      "stageName": "对象关系校验",
+      "stageIndex": 3,
+      "stageTotal": 6,
+      "initiator": {
+        "id": "chenchen",
+        "name": "陈晨",
+        "type": "USER"
+      },
+      "assignee": {
+        "id": "liming",
+        "name": "李桐"
+      },
+      "createdAt": "2026-05-20T10:42:00+08:00",
+      "createdAtLabel": "今天 10:42",
+      "deadlineAt": "2026-05-21T12:00:00+08:00",
+      "deadlineLabel": "明天 12:00",
+      "actionText": "去审核",
+      "actionUrl": "/tasks/task-customer-semantic/review/review-supplier-relation",
+      "riskSummary": "对象关系需要业务侧确认",
+      "tags": [
+        "对象关系",
+        "审核"
+      ]
+    },
+    {
+      "id": "review-datasource-error",
+      "title": "异常处理：数据连接异常",
+      "type": "EXCEPTION",
+      "status": "EXCEPTION",
+      "priority": "HIGH",
+      "sourceTaskId": "task-metadata-collect",
+      "sourceTaskName": "元数据自动采集任务",
+      "sourceTaskType": "元数据",
+      "stageId": "stage-datasource-connect",
+      "stageName": "数据源连接",
+      "stageIndex": 2,
+      "stageTotal": 5,
+      "initiator": {
+        "id": "system",
+        "name": "系统",
+        "type": "SYSTEM"
+      },
+      "assignee": {
+        "id": "liming",
+        "name": "李桐"
+      },
+      "createdAt": "2026-05-20T10:21:00+08:00",
+      "createdAtLabel": "今天 10:21",
+      "deadlineLabel": "尽快处理",
+      "actionText": "查看异常",
+      "actionUrl": "/tasks/task-metadata-collect/review/review-datasource-error?mode=exception",
+      "riskSummary": "supply_chain_prod 连接失败",
+      "tags": [
+        "异常",
+        "数据源"
+      ]
+    },
+    {
+      "id": "review-schema-read-failed",
+      "title": "异常处理：Schema 读取失败",
+      "type": "EXCEPTION",
+      "status": "EXCEPTION",
+      "priority": "HIGH",
+      "sourceTaskId": "task-metadata-collect",
+      "sourceTaskName": "元数据自动采集任务",
+      "sourceTaskType": "元数据",
+      "stageId": "stage-schema-scan",
+      "stageName": "Schema 扫描",
+      "stageIndex": 3,
+      "stageTotal": 5,
+      "initiator": {
+        "id": "system",
+        "name": "系统",
+        "type": "SYSTEM"
+      },
+      "assignee": {
+        "id": "liming",
+        "name": "李桐"
+      },
+      "createdAt": "2026-05-19T16:40:00+08:00",
+      "createdAtLabel": "昨天 16:40",
+      "deadlineLabel": "尽快处理",
+      "actionText": "查看异常",
+      "actionUrl": "/tasks/task-metadata-collect/review/review-schema-read-failed?mode=exception",
+      "riskSummary": "ods_scm schema 权限不足",
+      "tags": [
+        "异常",
+        "权限"
+      ]
+    },
+    {
+      "id": "review-continue-standard",
+      "title": "继续执行：数据标准落地任务",
+      "type": "RESUME",
+      "status": "RESUMABLE",
+      "priority": "MEDIUM",
+      "sourceTaskId": "task-data-standard",
+      "sourceTaskName": "数据标准落地任务",
+      "sourceTaskType": "标准管理",
+      "stageId": "stage-standard-mapping",
+      "stageName": "标准映射",
+      "stageIndex": 3,
+      "stageTotal": 6,
+      "initiator": {
+        "id": "wangqiang",
+        "name": "王强",
+        "type": "USER"
+      },
+      "assignee": {
+        "id": "liming",
+        "name": "李桐"
+      },
+      "createdAt": "2026-05-19T17:05:00+08:00",
+      "createdAtLabel": "昨天 17:05",
+      "deadlineAt": "2026-05-20T20:00:00+08:00",
+      "deadlineLabel": "今天 20:00",
+      "actionText": "继续执行",
+      "actionUrl": "/tasks/task-data-standard?stageId=stage-standard-mapping&resume=true",
+      "riskSummary": "等待继续执行标准映射",
+      "tags": [
+        "继续执行",
+        "标准映射"
+      ]
+    },
+    {
+      "id": "review-continue-purchase-mdm",
+      "title": "继续执行：采购主数据修复任务",
+      "type": "RESUME",
+      "status": "RESUMABLE",
+      "priority": "HIGH",
+      "sourceTaskId": "task-purchase-mdm-fix",
+      "sourceTaskName": "采购主数据修复任务",
+      "sourceTaskType": "主数据",
+      "stageId": "stage-field-fix",
+      "stageName": "字段修复",
+      "stageIndex": 1,
+      "stageTotal": 4,
+      "initiator": {
+        "id": "sunhao",
+        "name": "孙浩",
+        "type": "USER"
+      },
+      "assignee": {
+        "id": "liming",
+        "name": "李桐"
+      },
+      "createdAt": "2026-05-20T10:05:00+08:00",
+      "createdAtLabel": "今天 10:05",
+      "deadlineAt": "2026-05-20T19:00:00+08:00",
+      "deadlineLabel": "今天 19:00",
+      "actionText": "继续执行",
+      "actionUrl": "/tasks/task-purchase-mdm-fix?stageId=stage-field-fix&resume=true",
+      "riskSummary": "高优先级主数据修复",
+      "tags": [
+        "继续执行",
+        "主数据"
+      ]
+    }
+  ],
+  "total": 17,
+  "page": 1,
+  "pageSize": 10
+}

@@ -247,48 +247,63 @@ export default function ExecutionState() {
       <div className="flex h-full bg-[#F8FAFC]">
         {/* Center Execution Area */}
         <div className="flex-1 flex flex-col h-full relative border-r border-[#E5E7EB] min-w-0">
-          {/* Task Header */}
-          <div className="px-8 py-5 bg-white border-b border-[#E5E7EB] flex-shrink-0 flex items-start justify-between z-10">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-[20px] font-bold text-gray-900 truncate max-w-lg">{task.name}</h2>
-                <span className="px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-[12px] font-semibold flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-                  执行中
-                </span>
+          {/* Task Header & Alerts */}
+          <div className="bg-white border-b border-[#E5E7EB] flex-shrink-0 z-10">
+            <div className="px-8 py-5 flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h2 className="text-[20px] font-bold text-gray-900 truncate max-w-lg">{task.name}</h2>
+                  <span className="px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-[12px] font-semibold flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+                    执行中
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 text-[13px] text-gray-500">
+                  <span>项目：{task.project.name}</span>
+                  <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                  <span>当前阶段：<span className="font-medium text-gray-700">{currentStage?.name}</span> <span className="text-gray-400">{currentStage?.index}/{task.stages.length}</span></span>
+                  <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                  <span>整体进度：<span className="font-medium text-gray-700">{task.progress}%</span></span>
+                  <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                  <span>最近更新：09:50</span>
+                </div>
               </div>
-              <div className="flex items-center gap-4 text-[13px] text-gray-500">
-                <span>项目：{task.project.name}</span>
-                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <span>当前阶段：<span className="font-medium text-gray-700">{currentStage?.name}</span> <span className="text-gray-400">{currentStage?.index}/{task.stages.length}</span></span>
-                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <span>整体进度：<span className="font-medium text-gray-700">{task.progress}%</span></span>
-                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <span>最近更新：09:50</span>
+              <div className="flex items-center gap-2">
+                <button className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors shadow-sm">
+                  <Share2 size={16} />
+                </button>
+                <button className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors shadow-sm">
+                  <MoreHorizontal size={16} />
+                </button>
+                <button
+                  onClick={() => {
+                    const next = !isSidebarOpen;
+                    setIsSidebarOpen(next);
+                    if (!next) updateUrl({});
+                  }}
+                  className={cn("w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg transition-colors shadow-sm", isSidebarOpen ? "text-blue-600 bg-blue-50 border-blue-200" : "text-gray-600 hover:bg-gray-50")}
+                >
+                  <PanelRight size={16} />
+                </button>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors shadow-sm">
-                <Share2 size={16} />
-              </button>
-              <button className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors shadow-sm">
-                <MoreHorizontal size={16} />
-              </button>
-              <button
-                onClick={() => {
-                  const next = !isSidebarOpen;
-                  setIsSidebarOpen(next);
-                  if (!next) updateUrl({});
-                }}
-                className={cn("w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg transition-colors shadow-sm", isSidebarOpen ? "text-blue-600 bg-blue-50 border-blue-200" : "text-gray-600 hover:bg-gray-50")}
-              >
-                <PanelRight size={16} />
-              </button>
+
+            {/* Pending items alert strip - Integrated into header */}
+            <div className="px-8 pb-5">
+              <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-orange-50 border border-orange-200 text-[13px] text-orange-800 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <AlertCircle size={16} className="text-orange-500 flex-shrink-0" />
+                  <span>待处理：41 个冲突字段、326 个待确认字段，建议先处理高风险冲突。</span>
+                </div>
+                <button className="flex items-center gap-1 px-3 py-1.5 bg-white border border-orange-200 rounded-md text-[13px] font-medium text-orange-600 hover:bg-orange-50 transition-colors shadow-sm">
+                  查看冲突字段 <ChevronRight size={14} />
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Conversation Stream */}
-          <div className="flex-1 overflow-y-auto w-full flex justify-center py-8">
+          <div className="flex-1 overflow-y-auto w-full flex justify-center py-6">
             <div className="w-full max-w-[780px] px-6 space-y-6">
 
               {/* Completed Stages Strip */}
@@ -303,13 +318,6 @@ export default function ExecutionState() {
                   </React.Fragment>
                 ))}
                 <span className="text-[12px] text-gray-400 ml-auto">已完成</span>
-              </div>
-
-              {/* Pending items alert strip */}
-              <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-50 border border-amber-200/80 text-[13px] text-amber-800">
-                <AlertTriangle size={14} className="text-amber-500 flex-shrink-0" />
-                <span>待处理：41 个冲突字段、326 个待确认字段，建议先处理高风险冲突。</span>
-                <button className="ml-auto text-[12px] font-medium text-amber-600 hover:text-amber-800 whitespace-nowrap transition-colors">查看详情 →</button>
               </div>
 
               {/* Stage-grouped Conversation Stream */}
@@ -658,7 +666,7 @@ function TaskSidePanel({ activeTab, setActiveTab, isPlanExpanded, setIsPlanExpan
 }) {
   return (
     <div className="flex flex-col h-full">
-      <div className="flex border-b border-[#E5E7EB] flex-shrink-0">
+      <div className="flex border-b border-[#E5E7EB] flex-shrink-0 bg-white">
         <button
           onClick={() => setActiveTab('plan')}
           className={cn("flex-1 py-3.5 text-[14px] transition-colors", activeTab === 'plan' ? "font-semibold text-blue-600 border-b-2 border-blue-600" : "font-medium text-gray-500 hover:text-gray-900 border-b-2 border-transparent")}
@@ -668,8 +676,8 @@ function TaskSidePanel({ activeTab, setActiveTab, isPlanExpanded, setIsPlanExpan
           className={cn("flex-1 py-3.5 text-[14px] transition-colors", activeTab === 'detail' ? "font-semibold text-blue-600 border-b-2 border-blue-600" : "font-medium text-gray-500 hover:text-gray-900 border-b-2 border-transparent")}
         >任务详情</button>
       </div>
-      <div className="flex-1 overflow-y-auto w-full">
-        <div className="p-5 space-y-6">
+      <div className="flex-1 overflow-y-auto w-full bg-[#F8FAFC]">
+        <div className="p-4 space-y-4">
           {activeTab === 'plan' ? (
             <PlanTab isPlanExpanded={isPlanExpanded} setIsPlanExpanded={setIsPlanExpanded} />
           ) : (
@@ -687,22 +695,16 @@ function PlanTab({ isPlanExpanded, setIsPlanExpanded }: {
   setIsPlanExpanded: (v: boolean) => void;
 }) {
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Progress */}
-      <div>
-        <div className="flex items-center justify-between mb-2 cursor-pointer group" onClick={() => setIsPlanExpanded(!isPlanExpanded)}>
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] font-bold text-gray-900 tracking-wide uppercase group-hover:text-blue-600 transition-colors">整体进度</span>
-            <ChevronDown size={14} className={cn("text-gray-400 group-hover:text-blue-500 transition-transform duration-200", isPlanExpanded && "rotate-180")} />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[12px] text-gray-500">已完成 {completedStages.length} / {task.stages.length} 个阶段</span>
-            <span className="text-[14px] font-bold text-blue-600">{task.progress}%</span>
-          </div>
+    <div className="space-y-4 animate-in fade-in duration-300">
+      {/* Progress Block */}
+      <div className="bg-white border border-gray-100 rounded-xl p-5">
+        <h4 className="text-[14px] font-bold text-gray-900 mb-2">整体进度</h4>
+        <div className="text-[28px] font-bold text-gray-900 mb-2">{task.progress}%</div>
+        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
+          <div className="h-full bg-blue-600 rounded-full transition-all duration-500" style={{ width: `${task.progress}%` }}></div>
         </div>
-        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-6">
-          <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${task.progress}%` }}></div>
-        </div>
+        <div className="text-[13px] text-gray-500 mb-8">已完成 {completedStages.length} / {task.stages.length} 阶段</div>
+        
         <StageTimeline />
       </div>
     </div>
@@ -714,10 +716,10 @@ function DetailTab({ onIssueClick, onDeliverableClick }: {
   onDeliverableClick: (deliv: { id: string; name: string; type: string; description?: string }) => void;
 }) {
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Section 1: Context / Data Source */}
-      <div>
-        <h4 className="text-[14px] font-semibold text-gray-900 mb-3">上下文 / 数据源</h4>
+    <div className="space-y-4 animate-in fade-in duration-300">
+      {/* Section 1: Context / Data Source Block */}
+      <div className="bg-white border border-gray-100 rounded-xl p-5">
+        <h4 className="text-[14px] font-semibold text-gray-900 mb-4">上下文 / 数据源</h4>
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 text-gray-900 font-semibold text-[13px]">
@@ -754,11 +756,9 @@ function DetailTab({ onIssueClick, onDeliverableClick }: {
         </div>
       </div>
 
-      <div className="w-full h-px bg-[#E5E7EB]"></div>
-
-      {/* Section 2: Risks */}
-      <div>
-        <h4 className="flex items-center gap-2 text-[14px] font-semibold text-gray-900 mb-3">
+      {/* Section 2: Risks Block */}
+      <div className="bg-white border border-gray-100 rounded-xl p-5">
+        <h4 className="flex items-center gap-2 text-[14px] font-semibold text-gray-900 mb-4">
           <AlertCircle size={16} className="text-red-500" />
           风险与待处理
         </h4>
@@ -784,11 +784,9 @@ function DetailTab({ onIssueClick, onDeliverableClick }: {
         </div>
       </div>
 
-      <div className="w-full h-px bg-[#E5E7EB]"></div>
-
-      {/* Section 3: Deliverables */}
-      <div>
-        <h4 className="text-[14px] font-semibold text-gray-900 mb-3">最新交付物</h4>
+      {/* Section 3: Deliverables Block */}
+      <div className="bg-white border border-gray-100 rounded-xl p-5">
+        <h4 className="text-[14px] font-semibold text-gray-900 mb-4">最新交付物</h4>
         <div className="space-y-2">
           {sidePanel.deliverables.map((item) => (
             <div
@@ -821,31 +819,33 @@ function StageTimeline() {
   return (
     <div className="relative animate-in slide-in-from-top-2 duration-300">
       <div className="absolute left-[9px] top-3 bottom-4 w-px bg-gray-200"></div>
-      <ul className="space-y-4 relative">
-        {task.stages.map((stage) => {
+      <ul className="space-y-5 relative">
+        {task.stages.map((stage, index) => {
           const status = stage.status === 'COMPLETED' ? 'done' : stage.status === 'RUNNING' ? 'active' : 'pending';
           return (
-            <li key={stage.id} className="flex gap-3.5 relative">
-              {status === 'done' && (
-                <div className="w-5 h-5 rounded-full bg-green-500 border-2 border-white flex items-center justify-center text-white flex-shrink-0 mt-0.5 z-10 shadow-sm">
-                  <CheckCircle2 size={12} strokeWidth={3} />
-                </div>
-              )}
-              {status === 'active' && (
-                <div className="w-5 h-5 rounded-full bg-blue-100 border-2 border-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5 z-10">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                </div>
-              )}
-              {status === 'pending' && (
-                <div className="w-5 h-5 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center flex-shrink-0 mt-0.5 z-10"></div>
-              )}
-              <div>
-                <div className={cn("text-[13px] font-medium", status === 'done' ? "text-gray-700" : status === 'active' ? "text-blue-600" : "text-gray-400")}>
-                  {stage.name}
-                </div>
-                {stage.summary && status !== 'pending' && (
-                  <div className="text-[12px] text-gray-500 mt-0.5">{stage.summary}</div>
+            <li key={stage.id} className="flex items-center justify-between relative group">
+              <div className="flex items-center gap-3">
+                {status === 'done' && (
+                  <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center text-white flex-shrink-0 z-10 shadow-sm">
+                    <CheckCircle2 size={14} strokeWidth={3} />
+                  </div>
                 )}
+                {status === 'active' && (
+                  <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 z-10 shadow-[0_0_0_3px_rgba(37,99,235,0.15)]">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                  </div>
+                )}
+                {status === 'pending' && (
+                  <div className="w-5 h-5 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center flex-shrink-0 z-10"></div>
+                )}
+                <div className={cn("text-[14px]", status === 'done' ? "text-gray-900" : status === 'active' ? "text-blue-600 font-semibold" : "text-gray-500")}>
+                  {index + 1}. {stage.name}
+                </div>
+              </div>
+              <div className="flex-shrink-0">
+                {status === 'done' && <span className="text-[13px] text-green-600">已完成</span>}
+                {status === 'active' && <span className="text-[12px] font-medium text-blue-600 bg-blue-50 px-2.5 py-1 rounded">执行中</span>}
+                {status === 'pending' && <span className="text-[13px] text-gray-400">待开始</span>}
               </div>
             </li>
           );

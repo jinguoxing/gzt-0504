@@ -630,92 +630,102 @@ export default function Home() {
         </div>
 
         {/* Messages Stream */}
-        <div className="flex-1 overflow-y-auto px-8 py-8 space-y-8">
-          {messages.map((msg) => (
-            <div key={msg.id}>
-              {msg.role === 'user' ? (
-                /* User Message */
-                <div className="flex flex-col items-end w-full">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[12px] text-gray-400">{formatTime(msg.createdAt)}</span>
-                    <span className="font-semibold text-[14px] text-gray-900">{draftMockData.conversation[0].authorName}</span>
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0 ml-1">
-                      <User size={16} />
-                    </div>
-                  </div>
-                  <div className="text-[15px] text-gray-800 leading-relaxed text-right max-w-3xl mr-11">
-                    {msg.content}
-                  </div>
-                </div>
-              ) : (
-                /* Xino Message */
-                <div className="flex gap-4 max-w-4xl">
-                  <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white flex-shrink-0 mt-1 shadow-sm">
-                    <Sparkles size={16} />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="font-semibold text-[14px] text-gray-900">Xino</span>
-                      <span className="text-[12px] text-gray-400">{formatTime(msg.createdAt)}</span>
-                    </div>
-                    <div className="text-[15px] text-gray-800 leading-relaxed mb-4">
-                      {msg.content}
-                    </div>
-
-                    {/* Change Summary Card */}
-                    {msg.changeSummary && (
-                      <div className="bg-white border border-[#E5E7EB] rounded-xl p-5 shadow-sm max-w-md mt-2">
-                        <div className="flex items-center gap-2 mb-4">
-                          <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                            <Check size={14} strokeWidth={3} />
-                          </div>
-                          <h4 className="font-semibold text-[14px] text-gray-900">{msg.changeSummary.title}</h4>
-                        </div>
-                        <div className="space-y-3">
-                          {msg.changeSummary.changes.map((chg, idx) => (
-                            <div key={idx} className="text-[13px] flex items-start gap-4">
-                              <span className="text-gray-500 w-24 flex-shrink-0">{chg.field}：</span>
-                              <span className="text-gray-900">{chg.from} <span className="text-gray-400 mx-1">→</span> <span className="text-blue-600 font-medium">{chg.to}</span></span>
-                            </div>
-                          ))}
-                        </div>
+        <div className="flex-1 overflow-y-auto pt-10 pb-8 scroll-smooth">
+          <div className="w-full max-w-[780px] mx-auto px-6 space-y-8">
+            {messages.map((msg) => (
+              <div key={msg.id} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                {msg.role === 'user' ? (
+                  /* User Message - Standard style from execution page */
+                  <div className="flex justify-end">
+                    <div className="w-[85%] max-w-[580px]">
+                      <div className="flex items-center gap-2 mb-1.5 justify-end">
+                        <span className="text-[12px] text-gray-400">{formatTime(msg.createdAt)}</span>
+                        <span className="font-medium text-[13px] text-gray-600">{draftMockData.conversation[0].authorName}</span>
                       </div>
-                    )}
+                      <div className="bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-3 shadow-sm ml-auto inline-block">
+                        <p className="text-[14px] text-gray-800 leading-relaxed text-right">
+                          {msg.content}
+                        </p>
+                      </div>
+                    </div>
                   </div>
+                ) : (
+                  /* Xino Message - Standard style from execution page */
+                  <div className="flex gap-4 max-w-full group">
+                    <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white flex-shrink-0 mt-0.5 shadow-sm">
+                      <Sparkles size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="font-semibold text-[13px] text-gray-900">Xino</span>
+                        <span className="text-[12px] text-gray-400">{formatTime(msg.createdAt)}</span>
+                      </div>
+                      <p className="text-[14px] text-gray-700 leading-relaxed">
+                        {msg.content}
+                      </p>
+
+                      {/* Change Summary Card - Matching execution result blocks */}
+                      {msg.changeSummary && (
+                        <div className="bg-white border border-[#E5E7EB] rounded-xl p-5 shadow-sm max-w-md mt-4 animate-in zoom-in-95 duration-300">
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                              <Check size={14} strokeWidth={3} />
+                            </div>
+                            <h4 className="font-semibold text-[14px] text-gray-900">{msg.changeSummary.title}</h4>
+                          </div>
+                          <div className="space-y-3">
+                            {msg.changeSummary.changes.map((chg, idx) => (
+                              <div key={idx} className="text-[13px] flex items-start gap-4">
+                                <span className="text-gray-500 w-24 flex-shrink-0">{chg.field}：</span>
+                                <span className="text-gray-900 font-medium">
+                                  <span className="text-gray-400 font-normal">{chg.from}</span>
+                                  <span className="text-gray-300 mx-2">→</span>
+                                  <span className="text-blue-600">{chg.to}</span>
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Xino typing indicator */}
+            {isXinoTyping && (
+              <div className="flex gap-4 max-w-full animate-in fade-in duration-200">
+                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white flex-shrink-0 mt-0.5 shadow-sm">
+                  <Sparkles size={16} />
                 </div>
-              )}
-            </div>
-          ))}
-
-          {/* Xino typing indicator */}
-          {isXinoTyping && (
-            <div className="flex gap-4 max-w-4xl animate-in fade-in duration-200">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white flex-shrink-0 mt-1 shadow-sm">
-                <Sparkles size={16} />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="font-semibold text-[13px] text-gray-900">Xino</span>
+                    <Loader2 size={12} className="text-blue-600 animate-spin" />
+                  </div>
+                  <span className="text-[14px] text-gray-400">正在理解你的要求并更新草稿…</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 pt-2">
-                <Loader2 size={16} className="text-gray-400 animate-spin" />
-                <span className="text-[14px] text-gray-400">Xino 正在理解你的要求…</span>
+            )}
+
+            {/* Suggested Chips — show only when not typing and no adjustments yet */}
+            {!isXinoTyping && !hasAdjustments && (
+              <div className="flex flex-wrap gap-2 justify-center pt-2">
+                {DRAFT_SUGGESTED_CHIPS.map(chip => (
+                  <button
+                    key={chip}
+                    onClick={() => handleChipClick(chip)}
+                    className="px-4 py-2 rounded-full border border-gray-200 bg-white text-[13px] text-gray-600 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-all shadow-sm"
+                  >
+                    {chip}
+                  </button>
+                ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Suggested Chips — show only when not typing and no adjustments yet */}
-          {!isXinoTyping && !hasAdjustments && (
-            <div className="flex flex-wrap gap-2">
-              {DRAFT_SUGGESTED_CHIPS.map(chip => (
-                <button
-                  key={chip}
-                  onClick={() => handleChipClick(chip)}
-                  className="px-3 py-1.5 rounded-full border border-gray-200 bg-white text-[13px] text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors shadow-sm"
-                >
-                  {chip}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div ref={messagesEndRef} className="h-4"></div>
+            <div ref={messagesEndRef} className="h-10"></div>
+          </div>
         </div>
 
         {/* Bottom Input Area */}

@@ -1,0 +1,166 @@
+{
+  "statuses": [
+    {
+      "label": "全部",
+      "value": "ALL"
+    },
+    {
+      "label": "待处理",
+      "value": "PENDING"
+    },
+    {
+      "label": "处理中",
+      "value": "PROCESSING"
+    },
+    {
+      "label": "待审核",
+      "value": "WAITING_APPROVAL"
+    },
+    {
+      "label": "异常",
+      "value": "EXCEPTION"
+    },
+    {
+      "label": "可继续执行",
+      "value": "RESUMABLE"
+    },
+    {
+      "label": "已处理",
+      "value": "DONE"
+    },
+    {
+      "label": "已忽略",
+      "value": "IGNORED"
+    }
+  ],
+  "types": [
+    {
+      "label": "全部",
+      "value": "ALL"
+    },
+    {
+      "label": "待确认",
+      "value": "CONFIRM"
+    },
+    {
+      "label": "待审核",
+      "value": "APPROVAL"
+    },
+    {
+      "label": "异常",
+      "value": "EXCEPTION"
+    },
+    {
+      "label": "继续执行",
+      "value": "RESUME"
+    }
+  ],
+  "sourceTasks": [
+    {
+      "label": "全部",
+      "value": "ALL"
+    },
+    {
+      "label": "供应链语义治理闭环任务",
+      "value": "task-supply-chain-loop"
+    },
+    {
+      "label": "订单对象映射修复任务",
+      "value": "task-order-object-fix"
+    },
+    {
+      "label": "客户语义治理任务",
+      "value": "task-customer-semantic"
+    },
+    {
+      "label": "元数据自动采集任务",
+      "value": "task-metadata-collect"
+    },
+    {
+      "label": "数据标准落地任务",
+      "value": "task-data-standard"
+    },
+    {
+      "label": "采购主数据修复任务",
+      "value": "task-purchase-mdm-fix"
+    }
+  ],
+  "initiators": [
+    {
+      "label": "全部",
+      "value": "ALL"
+    },
+    {
+      "label": "Xino",
+      "value": "xino"
+    },
+    {
+      "label": "系统",
+      "value": "system"
+    },
+    {
+      "label": "李桐",
+      "value": "liming"
+    },
+    {
+      "label": "张悦",
+      "value": "zhangyue"
+    },
+    {
+      "label": "王强",
+      "value": "wangqiang"
+    },
+    {
+      "label": "陈晨",
+      "value": "chenchen"
+    },
+    {
+      "label": "孙浩",
+      "value": "sunhao"
+    }
+  ],
+  "priorities": [
+    {
+      "label": "全部",
+      "value": "ALL"
+    },
+    {
+      "label": "高",
+      "value": "HIGH"
+    },
+    {
+      "label": "中",
+      "value": "MEDIUM"
+    },
+    {
+      "label": "低",
+      "value": "LOW"
+    }
+  ],
+  "deadlines": [
+    {
+      "label": "全部",
+      "value": "ALL"
+    },
+    {
+      "label": "今天到期",
+      "value": "TODAY"
+    },
+    {
+      "label": "近 3 天",
+      "value": "THREE_DAYS"
+    },
+    {
+      "label": "近 7 天",
+      "value": "SEVEN_DAYS"
+    },
+    {
+      "label": "已逾期",
+      "value": "OVERDUE"
+    },
+    {
+      "label": "自定义时间",
+      "value": "CUSTOM"
+    }
+  ]
+}
