@@ -25,7 +25,7 @@ export default function LeftNav() {
       {/* Main Action */}
       <div className="px-4 mb-4">
         <button
-          onClick={() => navigate('/workbench')}
+          onClick={() => navigate('/ai-workbench')}
           className="w-full flex items-center justify-center gap-2 bg-white border border-[#D1D5DB] hover:bg-gray-50 text-gray-700 text-[14px] font-medium py-2 px-4 rounded-lg shadow-sm transition-colors"
         >
           <Plus size={16} />

@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   ChevronRight, CheckCircle2, FileText, Download, Share2, RotateCw,
-  Archive, ExternalLink, Package, Eye, Clock
+  Archive, ExternalLink, Package, Eye, Clock, ArrowLeft, Table,
+  Copy, Users, Wrench, Network, Send
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import mockData from '@/mock/task-completed.json';
@@ -25,7 +27,31 @@ const toneColorMap: Record<string, string> = {
   orange: 'text-orange-600',
 };
 
+const REC_ICON_MAP: Record<string, React.ReactNode> = {
+  share: <Users size={18} />,
+  fix: <Wrench size={18} />,
+  continue: <Network size={18} />,
+};
+
+// ==================== Types ====================
+interface DeliverableDetailData {
+  id: string;
+  name: string;
+  type: string;
+  description?: string;
+  sizeBytes?: number;
+  createdAt?: string;
+  createdBy?: { name: string };
+}
+
+type DetailPanel =
+  | { kind: 'deliverable'; data: DeliverableDetailData }
+  | null;
+
+// ==================== Main Component ====================
+
 export default function CompletedTask() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('任务总结');
 
   const task = mockData.task;
@@ -33,7 +59,46 @@ export default function CompletedTask() {
   const stageTimeline = mockData.stageTimeline;
   const deliverables = mockData.deliverables;
   const resultSummary = mockData.resultSummary;
-  const nextRecommendations = mockData.nextRecommendations;
+  const nextRecommendations = mockData.nextRecommendations as Array<{
+    id: string;
+    icon: string;
+    title: string;
+    description: string;
+  }>;
+
+  // URL state
+  const deliverableIdParam = searchParams.get('deliverableId');
+
+  const [detailPanel, setDetailPanel] = useState<DetailPanel>(() => {
+    if (deliverableIdParam) {
+      const d = deliverables.find((f: any) => f.id === deliverableIdParam);
+      if (d) return { kind: 'deliverable', data: { id: d.id, name: d.name, type: d.type, description: d.description, sizeBytes: d.sizeBytes, createdAt: d.createdAt, createdBy: d.createdBy } };
+    }
+    return null;
+  });
+
+  const updateUrl = useCallback((params: Record<string, string | null>) => {
+    setSearchParams(prev => {
+      prev.delete('deliverableId');
+      for (const [k, v] of Object.entries(params)) {
+        if (v) prev.set(k, v); else prev.delete(k);
+      }
+      return prev;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const handleDeliverableClick = (file: any) => {
+    setDetailPanel({
+      kind: 'deliverable',
+      data: { id: file.id, name: file.name, type: file.type, description: file.description, sizeBytes: file.sizeBytes, createdAt: file.createdAt, createdBy: file.createdBy }
+    });
+    updateUrl({ deliverableId: file.id });
+  };
+
+  const handleDetailBack = () => {
+    setDetailPanel(null);
+    updateUrl({});
+  };
 
   return (
     <div className="flex h-full bg-[#F8FAFC]">
@@ -95,7 +160,7 @@ export default function CompletedTask() {
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
             <h3 className="text-[16px] font-semibold text-gray-900 mb-5">阶段完成总结</h3>
             <div className="grid grid-cols-4 gap-4">
-              {stageTimeline.map((stage, idx) => (
+              {stageTimeline.map((stage) => (
                 <div key={stage.id} className="flex items-start gap-3 bg-green-50/50 rounded-xl p-4">
                   <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <CheckCircle2 size={14} className="text-white" />
@@ -125,7 +190,11 @@ export default function CompletedTask() {
               </thead>
               <tbody>
                 {deliverables.map((file) => (
-                  <tr key={file.id} className="border-b border-gray-50">
+                  <tr
+                    key={file.id}
+                    onClick={() => handleDeliverableClick(file)}
+                    className="border-b border-gray-50 cursor-pointer hover:bg-blue-50/40 transition-colors"
+                  >
                     <td className="py-3">
                       <div className="flex items-center gap-2">
                         <FileText size={16} className="text-gray-400" />
@@ -135,7 +204,7 @@ export default function CompletedTask() {
                     <td className="py-3 text-[13px] text-gray-500">{file.description}</td>
                     <td className="py-3 text-[13px] text-gray-400">{formatBytes(file.sizeBytes)}</td>
                     <td className="py-3 text-[13px] text-gray-400">{formatDate(file.createdAt)}</td>
-                    <td className="py-3 text-right">
+                    <td className="py-3 text-right" onClick={e => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         <button className="text-[12px] text-blue-600 hover:bg-blue-50 px-2 py-1 rounded">预览</button>
                         <button className="text-[12px] text-gray-500 hover:bg-gray-100 px-2 py-1 rounded flex items-center gap-1">
@@ -166,11 +235,19 @@ export default function CompletedTask() {
               </div>
               <div>
                 <h4 className="text-[14px] font-medium text-gray-700 mb-3">下一步建议</h4>
-                <div className="space-y-2">
-                  {nextRecommendations.map((item, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-[13px] text-gray-600">
-                      <ChevronRight size={14} className="text-blue-500 mt-0.5 flex-shrink-0" />
-                      {item}
+                <div className="space-y-3">
+                  {nextRecommendations.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-start gap-3 p-3 bg-blue-50/50 border border-blue-100 rounded-xl hover:bg-blue-50 cursor-pointer transition-colors"
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-600">
+                        {REC_ICON_MAP[item.icon] || <ChevronRight size={18} />}
+                      </div>
+                      <div>
+                        <div className="text-[13px] font-semibold text-gray-900">{item.title}</div>
+                        <div className="text-[12px] text-gray-500 mt-0.5">{item.description}</div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -182,121 +259,216 @@ export default function CompletedTask() {
 
       {/* Right Sidebar */}
       <div className="w-[360px] bg-white border-l border-gray-200 flex flex-col flex-shrink-0">
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200 flex-shrink-0">
-          {SIDEBAR_TABS.map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                'flex-1 py-3 text-[13px] font-medium transition-colors border-b-2',
-                activeTab === tab
-                  ? 'text-blue-600 border-blue-600'
-                  : 'text-gray-400 border-transparent hover:text-gray-600'
-              )}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-5">
-          {activeTab === '任务总结' && (
-            <div className="space-y-5">
-              <div>
-                <h4 className="text-[13px] font-semibold text-gray-700 mb-3">整体概览</h4>
-                <div className="space-y-2">
-                  {[
-                    { label: '整体进度', value: `${task.progress}%` },
-                    { label: '任务已完成', value: `${task.stages.length} / ${task.stages.length} 阶段` },
-                    { label: '创建时间', value: formatDate(task.createdAt) },
-                    { label: '完成时间', value: formatDate(task.completedAt) },
-                    { label: '耗时', value: '1 天 5 小时 32 分钟' },
-                    { label: '参与成员', value: '5 人' },
-                  ].map(item => (
-                    <div key={item.label} className="flex items-center justify-between text-[12px]">
-                      <span className="text-gray-400">{item.label}</span>
-                      <span className="text-gray-700 font-medium">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="border-t border-gray-100 pt-4">
-                <h4 className="text-[13px] font-semibold text-gray-700 mb-3">关键指标</h4>
-                <div className="space-y-2">
-                  {[
-                    { label: '扫描字段总数', value: '4,920' },
-                    { label: '生成业务对象', value: '12' },
-                    { label: '确认对象关系', value: '21 / 26' },
-                    { label: '标准映射覆盖率', value: '88%' },
-                    { label: '冲突修复率', value: '88%' },
-                    { label: '业务确认通过率', value: '95%' },
-                  ].map(item => (
-                    <div key={item.label} className="flex items-center justify-between text-[12px]">
-                      <span className="text-gray-400">{item.label}</span>
-                      <span className="text-gray-700 font-medium">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="border-t border-gray-100 pt-4">
-                <h4 className="text-[13px] font-semibold text-gray-700 mb-3">快速操作</h4>
-                <div className="space-y-2">
-                  {[
-                    { icon: RotateCw, label: '再次运行相同任务' },
-                    { icon: Download, label: '导出任务配置' },
-                    { icon: Archive, label: '归档任务' },
-                  ].map(item => (
-                    <button key={item.label} className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-                      <item.icon size={14} className="text-gray-400" />
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === '交付物预览' && (
-            <div className="space-y-3">
-              {deliverables.map((file) => (
-                <div key={file.id} className="bg-gray-50 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <FileText size={16} className="text-gray-400" />
-                    <span className="text-[13px] font-medium text-gray-900">{file.name}</span>
-                  </div>
-                  <p className="text-[12px] text-gray-500 mb-2">{file.description}</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-gray-400">{formatBytes(file.sizeBytes)}</span>
-                    <span className="text-[11px] text-gray-400">·</span>
-                    <span className="text-[11px] text-gray-400">{formatDate(file.createdAt)}</span>
-                  </div>
-                </div>
+        {detailPanel ? (
+          <CompletedDeliverableDetailPanel data={detailPanel.data} onBack={handleDetailBack} />
+        ) : (
+          <>
+            {/* Tabs */}
+            <div className="flex border-b border-gray-200 flex-shrink-0">
+              {SIDEBAR_TABS.map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={cn(
+                    'flex-1 py-3 text-[13px] font-medium transition-colors border-b-2',
+                    activeTab === tab
+                      ? 'text-blue-600 border-blue-600'
+                      : 'text-gray-400 border-transparent hover:text-gray-600'
+                  )}
+                >
+                  {tab}
+                </button>
               ))}
             </div>
-          )}
 
-          {activeTab === '活动记录' && (
-            <div className="space-y-4">
-              {ACTIVITY_LOGS.map((log, idx) => (
-                <div key={idx} className="flex items-start gap-3">
-                  <div className="flex flex-col items-center">
-                    <div className="w-2 h-2 rounded-full bg-gray-300 mt-1.5" />
-                    {idx < ACTIVITY_LOGS.length - 1 && <div className="w-px h-full bg-gray-200 min-h-[20px]" />}
-                  </div>
+            <div className="flex-1 overflow-y-auto p-5">
+              {activeTab === '任务总结' && (
+                <div className="space-y-5">
                   <div>
-                    <div className="text-[12px] text-gray-400">{log.time}</div>
-                    <div className="text-[13px] text-gray-700">
-                      <span className="font-medium">{log.user}</span> {log.action}
+                    <h4 className="text-[13px] font-semibold text-gray-700 mb-3">整体概览</h4>
+                    <div className="space-y-2">
+                      {[
+                        { label: '整体进度', value: `${task.progress}%` },
+                        { label: '任务已完成', value: `${task.stages.length} / ${task.stages.length} 阶段` },
+                        { label: '创建时间', value: formatDate(task.createdAt) },
+                        { label: '完成时间', value: formatDate(task.completedAt) },
+                        { label: '耗时', value: '1 天 5 小时 32 分钟' },
+                        { label: '参与成员', value: '5 人' },
+                      ].map(item => (
+                        <div key={item.label} className="flex items-center justify-between text-[12px]">
+                          <span className="text-gray-400">{item.label}</span>
+                          <span className="text-gray-700 font-medium">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-100 pt-4">
+                    <h4 className="text-[13px] font-semibold text-gray-700 mb-3">关键指标</h4>
+                    <div className="space-y-2">
+                      {[
+                        { label: '扫描字段总数', value: '4,920' },
+                        { label: '生成业务对象', value: '12' },
+                        { label: '确认对象关系', value: '21 / 26' },
+                        { label: '标准映射覆盖率', value: '88%' },
+                        { label: '冲突修复率', value: '88%' },
+                        { label: '业务确认通过率', value: '95%' },
+                      ].map(item => (
+                        <div key={item.label} className="flex items-center justify-between text-[12px]">
+                          <span className="text-gray-400">{item.label}</span>
+                          <span className="text-gray-700 font-medium">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-100 pt-4">
+                    <h4 className="text-[13px] font-semibold text-gray-700 mb-3">快速操作</h4>
+                    <div className="space-y-2">
+                      {[
+                        { icon: RotateCw, label: '再次运行相同任务' },
+                        { icon: Download, label: '导出任务配置' },
+                        { icon: Archive, label: '归档任务' },
+                      ].map(item => (
+                        <button key={item.label} className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+                          <item.icon size={14} className="text-gray-400" />
+                          {item.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
-              ))}
+              )}
+
+              {activeTab === '交付物预览' && (
+                <div className="space-y-3">
+                  {deliverables.map((file) => (
+                    <div
+                      key={file.id}
+                      onClick={() => handleDeliverableClick(file)}
+                      className="bg-gray-50 rounded-xl p-4 cursor-pointer hover:bg-blue-50/50 border border-transparent hover:border-blue-200 transition-colors"
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <FileText size={16} className="text-gray-400" />
+                        <span className="text-[13px] font-medium text-gray-900">{file.name}</span>
+                      </div>
+                      <p className="text-[12px] text-gray-500 mb-2">{file.description}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-gray-400">{formatBytes(file.sizeBytes)}</span>
+                        <span className="text-[11px] text-gray-400">·</span>
+                        <span className="text-[11px] text-gray-400">{formatDate(file.createdAt)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {activeTab === '活动记录' && (
+                <div className="space-y-4">
+                  {ACTIVITY_LOGS.map((log, idx) => (
+                    <div key={idx} className="flex items-start gap-3">
+                      <div className="flex flex-col items-center">
+                        <div className="w-2 h-2 rounded-full bg-gray-300 mt-1.5" />
+                        {idx < ACTIVITY_LOGS.length - 1 && <div className="w-px h-full bg-gray-200 min-h-[20px]" />}
+                      </div>
+                      <div>
+                        <div className="text-[12px] text-gray-400">{log.time}</div>
+                        <div className="text-[13px] text-gray-700">
+                          <span className="font-medium">{log.user}</span> {log.action}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ==================== Deliverable Detail Panel (Completed) ====================
+
+function CompletedDeliverableDetailPanel({ data, onBack }: { data: DeliverableDetailData; onBack: () => void }) {
+  const iconConfig: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
+    PDF: { bg: 'bg-blue-50', text: 'text-blue-600', icon: <FileText size={24} /> },
+    XLSX: { bg: 'bg-green-50', text: 'text-green-600', icon: <Table size={24} /> },
+    CSV: { bg: 'bg-green-50', text: 'text-green-600', icon: <Table size={24} /> },
+    ZIP: { bg: 'bg-amber-50', text: 'text-amber-600', icon: <Package size={24} /> },
+  };
+  const config = iconConfig[data.type] || iconConfig.PDF;
+
+  return (
+    <div className="flex flex-col h-full animate-in slide-in-from-right-2 duration-200">
+      <div className="px-4 py-4 border-b border-gray-200 flex items-center gap-3 flex-shrink-0">
+        <button onClick={onBack} className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 transition-colors">
+          <ArrowLeft size={16} />
+        </button>
+        <h3 className="text-[15px] font-semibold text-gray-900">交付物详情</h3>
+      </div>
+      <div className="flex-1 overflow-y-auto p-5 space-y-6">
+        <div className="flex items-center gap-4">
+          <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0", config.bg, config.text)}>
+            {config.icon}
+          </div>
+          <div>
+            <h4 className="text-[15px] font-bold text-gray-900">{data.name}</h4>
+            <span className="text-[12px] text-gray-500">{data.type} 文件{data.sizeBytes ? ` · ${formatBytes(data.sizeBytes)}` : ''}</span>
+          </div>
         </div>
+
+        {data.description && (
+          <div>
+            <h4 className="text-[12px] font-medium text-gray-500 mb-2 uppercase tracking-wide">用途说明</h4>
+            <p className="text-[13px] text-gray-700 leading-relaxed bg-gray-50 border border-gray-200 rounded-lg p-3">{data.description}</p>
+          </div>
+        )}
+
+        <div>
+          <h4 className="text-[12px] font-medium text-gray-500 mb-2 uppercase tracking-wide">文件信息</h4>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center text-[13px]">
+              <span className="text-gray-600">生成者</span>
+              <span className="font-medium text-gray-900">{data.createdBy?.name || 'Xino'}</span>
+            </div>
+            <div className="flex justify-between items-center text-[13px]">
+              <span className="text-gray-600">生成时间</span>
+              <span className="font-medium text-gray-900">{data.createdAt ? formatDate(data.createdAt) : '—'}</span>
+            </div>
+            <div className="flex justify-between items-center text-[13px]">
+              <span className="text-gray-600">文件大小</span>
+              <span className="font-medium text-gray-900">{data.sizeBytes ? formatBytes(data.sizeBytes) : '—'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Preview area */}
+        <div>
+          <h4 className="text-[12px] font-medium text-gray-500 mb-2 uppercase tracking-wide">内容预览</h4>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
+            <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3", config.bg, config.text)}>
+              {config.icon}
+            </div>
+            <p className="text-[13px] text-gray-500 mb-2">{data.name}</p>
+            <p className="text-[12px] text-gray-400">点击下方按钮预览完整内容</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-2 flex-shrink-0">
+        <div className="flex gap-2">
+          <button className="flex-1 flex items-center justify-center gap-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-[13px] font-semibold py-2 rounded-lg transition-colors">
+            <Eye size={14} /> 预览
+          </button>
+          <button className="flex-1 flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-semibold py-2 rounded-lg transition-colors">
+            <Download size={14} /> 下载
+          </button>
+        </div>
+        <button className="w-full flex items-center justify-center gap-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-[13px] font-semibold py-2 rounded-lg transition-colors">
+          <Copy size={14} /> 复用为新任务输入
+        </button>
       </div>
     </div>
   );

@@ -147,6 +147,35 @@
   },
   "conversation": [
     {
+      "id": "msg-ds-form",
+      "role": "xino",
+      "authorName": "Xino",
+      "createdAt": "2025-05-16T09:08:00+08:00",
+      "messageType": "stage_result",
+      "text": "请选择本次治理任务使用的数据源。以下是当前可用的数据源连接：",
+      "stageId": "stage-1",
+      "stageName": "选择与采集",
+      "resultBlocks": [
+        {
+          "id": "rb-ds-form",
+          "type": "data_source_form",
+          "title": "选择数据源",
+          "summary": "请选择一个已连接的数据源作为本次治理的目标库。",
+          "data": {
+            "selectedId": "ds-supply-chain-prod",
+            "showConnectionTest": true,
+            "connectionTestResult": { "success": true, "latencyMs": 45, "message": "连接正常" },
+            "options": [
+              { "id": "ds-supply-chain-prod", "name": "supply_chain_prod", "type": "MySQL", "host": "10.10.10.25", "port": 3306, "database": "supply_chain_prod", "status": "CONNECTED", "selectedTableCount": 128, "scannedFieldCount": 4920 },
+              { "id": "ds-warehouse-prod", "name": "warehouse_prod", "type": "PostgreSQL", "host": "10.10.10.30", "port": 5432, "database": "warehouse_prod", "status": "CONNECTED", "selectedTableCount": 64, "scannedFieldCount": 2100 },
+              { "id": "ds-order-analytics", "name": "order_analytics", "type": "MySQL", "host": "10.10.10.40", "port": 3306, "database": "order_analytics", "status": "DISCONNECTED" }
+            ]
+          },
+          "status": "success"
+        }
+      ]
+    },
+    {
       "id": "msg-0",
       "role": "xino",
       "authorName": "Xino",
@@ -178,7 +207,9 @@
       "authorName": "李桐",
       "createdAt": "2025-05-16T09:30:00+08:00",
       "messageType": "normal",
-      "text": "排除表名包含 temp_ 和 backup_ 的表。"
+      "text": "排除表名包含 temp_ 和 backup_ 的表。",
+      "stageId": "stage-2",
+      "stageName": "Schema 扫描"
     },
     {
       "id": "msg-2",
@@ -258,9 +289,21 @@
       "id": "msg-4",
       "role": "user",
       "authorName": "李桐",
+      "createdAt": "2025-05-16T09:42:00+08:00",
+      "messageType": "normal",
+      "text": "是的，按 utf8mb4 解析，跳过的表标记一下就行。",
+      "stageId": "stage-4",
+      "stageName": "字段候选生成"
+    },
+    {
+      "id": "msg-4b",
+      "role": "user",
+      "authorName": "李桐",
       "createdAt": "2025-05-16T09:45:00+08:00",
       "messageType": "normal",
-      "text": "请继续推进字段语义理解，并重点识别冲突字段。"
+      "text": "请继续推进字段语义理解，并重点识别冲突字段。",
+      "stageId": "stage-5",
+      "stageName": "字段语义理解"
     },
     {
       "id": "msg-5",
@@ -313,6 +356,50 @@
       ]
     },
     {
+      "id": "msg-5b",
+      "role": "user",
+      "authorName": "李桐",
+      "createdAt": "2025-05-16T09:48:00+08:00",
+      "messageType": "normal",
+      "text": "冲突字段的明细导出一份给我，我需要和业务方对齐。",
+      "stageId": "stage-5",
+      "stageName": "字段语义理解"
+    },
+    {
+      "id": "msg-5c",
+      "role": "xino",
+      "authorName": "Xino",
+      "createdAt": "2025-05-16T09:49:00+08:00",
+      "messageType": "stage_result",
+      "text": "已为您导出冲突字段明细，包含字段名、推断语义、置信度和来源信息。",
+      "stageId": "stage-5",
+      "stageName": "字段语义理解",
+      "resultBlocks": [
+        {
+          "id": "rb-export-conflict",
+          "type": "deliverable_list",
+          "title": "冲突字段导出",
+          "summary": "共 41 个冲突字段已导出。",
+          "data": {
+            "items": [
+              { "id": "del-conflict-xlsx", "name": "冲突字段明细.xlsx", "type": "XLSX", "description": "含字段名、推断语义、置信度、冲突原因", "time": "09:49" }
+            ]
+          },
+          "status": "success"
+        }
+      ]
+    },
+    {
+      "id": "msg-6-user",
+      "role": "user",
+      "authorName": "李桐",
+      "createdAt": "2025-05-16T09:50:00+08:00",
+      "messageType": "normal",
+      "text": "开始生成业务对象吧，重点关注采购和入库相关的对象。",
+      "stageId": "stage-6",
+      "stageName": "业务对象生成"
+    },
+    {
       "id": "msg-6",
       "role": "xino",
       "authorName": "Xino",
@@ -331,6 +418,164 @@
             "items": [
               { "id": "del-report", "name": "语义治理报告.pdf", "type": "PDF", "description": "管理者查看治理结论" },
               { "id": "del-list", "name": "业务对象清单.xlsx", "type": "XLSX", "description": "业务和研发对齐对象模型" }
+            ]
+          },
+          "status": "success"
+        }
+      ]
+    },
+    {
+      "id": "msg-7",
+      "role": "xino",
+      "authorName": "Xino",
+      "createdAt": "2025-05-16T09:55:00+08:00",
+      "messageType": "stage_result",
+      "text": "当前任务各阶段执行进度如下，其中字段语义理解仍在进行中（78%），后续阶段待依次执行。",
+      "stageId": "stage-5",
+      "stageName": "字段语义理解",
+      "resultBlocks": [
+        {
+          "id": "rb-stage-progress",
+          "type": "stage_progress",
+          "title": "执行阶段进度",
+          "summary": "共 8 个阶段，已完成 4 个，1 个执行中。",
+          "data": {
+            "stages": [
+              { "id": "s-1", "name": "选择与采集", "status": "COMPLETED", "progress": 100, "summary": "完成数据源选择与连接" },
+              { "id": "s-2", "name": "Schema 扫描", "status": "COMPLETED", "progress": 100, "summary": "扫描 128 张表，4,920 个字段" },
+              { "id": "s-3", "name": "业务表识别", "status": "COMPLETED", "progress": 100, "summary": "识别供应链业务相关表" },
+              { "id": "s-4", "name": "字段候选生成", "status": "COMPLETED", "progress": 100, "summary": "生成字段语义候选" },
+              { "id": "s-5", "name": "字段语义理解", "status": "RUNNING", "progress": 78, "summary": "识别字段语义与冲突字段" },
+              { "id": "s-6", "name": "业务对象生成", "status": "PENDING", "progress": 0 },
+              { "id": "s-7", "name": "血缘与影响分析", "status": "PENDING", "progress": 0 },
+              { "id": "s-8", "name": "质量校验与校准", "status": "PENDING", "progress": 0 }
+            ]
+          },
+          "status": "success"
+        }
+      ]
+    },
+    {
+      "id": "msg-8",
+      "role": "xino",
+      "authorName": "Xino",
+      "createdAt": "2025-05-16T10:05:00+08:00",
+      "messageType": "stage_result",
+      "text": "血缘与影响分析已完成，以下是供应链核心业务对象的关联图谱。识别出 12 个业务对象和 21 条关系。",
+      "stageId": "stage-7",
+      "stageName": "血缘与影响分析",
+      "resultBlocks": [
+        {
+          "id": "rb-graph",
+          "type": "graph",
+          "title": "业务对象关系图谱",
+          "summary": "供应链领域核心对象关联关系。",
+          "data": {
+            "stats": { "nodeCount": 5, "edgeCount": 6 },
+            "nodes": [
+              { "id": "n-1", "label": "采购订单", "type": "business_object" },
+              { "id": "n-2", "label": "供应商", "type": "business_object" },
+              { "id": "n-3", "label": "仓库", "type": "business_object" },
+              { "id": "n-4", "label": "物料", "type": "business_object" },
+              { "id": "n-5", "label": "入库单", "type": "business_object" }
+            ],
+            "edges": [
+              { "source": "n-1", "target": "n-2", "label": "关联供应商" },
+              { "source": "n-1", "target": "n-4", "label": "包含物料" },
+              { "source": "n-1", "target": "n-5", "label": "生成入库单" },
+              { "source": "n-5", "target": "n-3", "label": "入库仓库" },
+              { "source": "n-5", "target": "n-4", "label": "入库物料" },
+              { "source": "n-2", "target": "n-4", "label": "供应物料" }
+            ]
+          },
+          "status": "success"
+        }
+      ]
+    },
+    {
+      "id": "msg-9",
+      "role": "xino",
+      "authorName": "Xino",
+      "createdAt": "2025-05-16T10:15:00+08:00",
+      "messageType": "stage_result",
+      "text": "基于冲突字段和异常模式的分析，我整理了以下处理建议，供您参考。",
+      "stageId": "stage-5",
+      "stageName": "字段语义理解",
+      "resultBlocks": [
+        {
+          "id": "rb-recommendation",
+          "type": "recommendation",
+          "title": "处理建议",
+          "summary": "基于冲突字段分析生成的推荐处理方案。",
+          "data": {
+            "items": [
+              { "id": "rec-1", "title": "统一 po_status 枚举值", "description": "将 ods_scm.po_status 和 dwd_scm.po_status 的枚举值映射统一，消除歧义。", "confidence": 0.95, "reason": "两个 Schema 中 po_status 的枚举值存在交叉但不完全一致" },
+              { "id": "rec-2", "title": "补充 supplier_code 唯一约束", "description": "建议在 supplier_info 表上为 supplier_code 添加唯一约束，确保供应商编码不重复。", "confidence": 0.88, "reason": "当前存在 3 组重复编码记录" },
+              { "id": "rec-3", "title": "规范化 create_dt 字段格式", "description": "将日期字段统一为 ISO 8601 格式（YYYY-MM-DD），消除多种日期格式混用的问题。", "confidence": 0.72, "reason": "检测到 4 种不同的日期格式" }
+            ]
+          },
+          "status": "success"
+        }
+      ]
+    },
+    {
+      "id": "msg-9b",
+      "role": "user",
+      "authorName": "李桐",
+      "createdAt": "2025-05-16T10:18:00+08:00",
+      "messageType": "normal",
+      "text": "po_status 的冲突先帮我处理掉，其他两个建议先标记为待确认。",
+      "stageId": "stage-5",
+      "stageName": "字段语义理解"
+    },
+    {
+      "id": "msg-9c",
+      "role": "xino",
+      "authorName": "Xino",
+      "createdAt": "2025-05-16T10:19:00+08:00",
+      "messageType": "stage_result",
+      "text": "已处理完成。po_status 的枚举冲突已统一为供应链标准状态流，另外两项已标记为待确认。冲突字段数从 41 降至 40。",
+      "stageId": "stage-5",
+      "stageName": "字段语义理解",
+      "resultBlocks": [
+        {
+          "id": "rb-change-po",
+          "type": "change_summary",
+          "title": "po_status 冲突处理",
+          "data": {
+            "changes": [
+              { "label": "冲突字段数", "from": "41", "to": "40", "toClass": "text-green-700" },
+              { "label": "po_status 统一枚举", "to": "DRAFT → CONFIRMED → SHIPPED → CLOSED", "toClass": "text-blue-700 font-mono" },
+              { "label": "supplier_code", "to": "已标记待确认", "toClass": "text-amber-700" },
+              { "label": "create_dt 格式", "to": "已标记待确认", "toClass": "text-amber-700" }
+            ]
+          },
+          "status": "success"
+        }
+      ]
+    },
+    {
+      "id": "msg-10",
+      "role": "xino",
+      "authorName": "Xino",
+      "createdAt": "2025-05-16T10:20:00+08:00",
+      "messageType": "stage_result",
+      "text": "即将进入质量校验阶段，以下是当前的高级运行配置，您可以确认或调整。",
+      "stageId": "stage-8",
+      "stageName": "质量校验与校准",
+      "resultBlocks": [
+        {
+          "id": "rb-config",
+          "type": "config_form",
+          "title": "质量校验配置",
+          "summary": "以下配置将应用于最终的质量校验阶段。",
+          "data": {
+            "items": [
+              { "key": "parallelism", "label": "执行并行度", "type": "select", "value": 10, "options": [{ "label": "5", "value": 5 }, { "label": "10（推荐）", "value": 10 }, { "label": "20", "value": 20 }] },
+              { "key": "threshold", "label": "自动确认阈值", "type": "select", "value": "0.95", "options": [{ "label": "置信度 > 0.95（推荐）", "value": "0.95" }, { "label": "置信度 > 0.90", "value": "0.90" }, { "label": "全部人工确认", "value": "0" }] },
+              { "key": "sampling", "label": "数据采样策略", "type": "text", "value": "字段全量扫描，数据样例抽样 1000 行" },
+              { "key": "autoRetry", "label": "失败自动重试", "type": "toggle", "value": true },
+              { "key": "stopOnConflict", "label": "冲突数超过阈值暂停", "type": "toggle", "value": true }
             ]
           },
           "status": "success"

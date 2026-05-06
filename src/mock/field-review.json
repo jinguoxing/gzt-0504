@@ -386,6 +386,8 @@
         "id": "rv-deliv-1",
         "name": "字段确认清单_20250515.xlsx",
         "type": "XLSX",
+        "description": "所有已确认字段的语义标注结果，含字段名、推断语义、置信度与确认状态",
+        "sizeBytes": 240512,
         "createdAt": "2025-05-15T09:45:00+08:00",
         "createdBy": {
           "id": "xino",
@@ -396,6 +398,8 @@
         "id": "rv-deliv-2",
         "name": "冲突字段清单_20250515.xlsx",
         "type": "XLSX",
+        "description": "存在语义冲突的字段汇总，含冲突类型、双端语义、置信度差异与建议操作",
+        "sizeBytes": 189440,
         "createdAt": "2025-05-15T09:45:00+08:00",
         "createdBy": {
           "id": "xino",
@@ -406,6 +410,8 @@
         "id": "rv-deliv-3",
         "name": "待确认字段清单_20250515.xlsx",
         "type": "XLSX",
+        "description": "置信度低于阈值、需人工确认的字段列表，含推荐操作与样例值",
+        "sizeBytes": 156672,
         "createdAt": "2025-05-15T09:45:00+08:00",
         "createdBy": {
           "id": "xino",

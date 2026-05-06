@@ -7,6 +7,12 @@ import IssueListResult from './IssueListResult';
 import ChangeSummaryResult from './ChangeSummaryResult';
 import ConfirmationResult from './ConfirmationResult';
 import DeliverableResult from './DeliverableResult';
+import StageProgressResult from './StageProgressResult';
+import GraphResult from './GraphResult';
+import RecommendationResult from './RecommendationResult';
+import ConfigFormResult from './ConfigFormResult';
+import DataSourceFormResult from './DataSourceFormResult';
+import FallbackResult from './FallbackResult';
 
 /**
  * ResultBlockRenderer — 合同 P-10 / F-06
@@ -28,18 +34,17 @@ export default function ResultBlockRenderer({ block }: { block: ResultBlock }) {
       return <ConfirmationResult block={block} />;
     case 'deliverable_list':
       return <DeliverableResult block={block} />;
+    case 'stage_progress':
+      return <StageProgressResult block={block} />;
+    case 'graph':
+      return <GraphResult block={block} />;
+    case 'recommendation':
+      return <RecommendationResult block={block} />;
+    case 'config_form':
+      return <ConfigFormResult block={block} />;
+    case 'data_source_form':
+      return <DataSourceFormResult block={block} />;
     default:
       return <FallbackResult block={block} />;
   }
-}
-
-/** Fallback — 兜底渲染 */
-function FallbackResult({ block }: { block: ResultBlock }) {
-  return (
-    <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
-      <div className="text-[13px] font-semibold text-gray-900 mb-2">{block.title}</div>
-      {block.summary && <p className="text-[13px] text-gray-600">{block.summary}</p>}
-      <div className="mt-2 text-[12px] text-gray-400">未知模板类型: {block.type}</div>
-    </div>
-  );
 }

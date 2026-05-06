@@ -11,11 +11,11 @@
  *   ?panel=evidence|sql|source|row-detail  右侧栏模式
  *   ?status=completed                   完成态
  *
- * 草稿抽屉态通过 /workbench?draftId=:id 控制（P-03）
+ * 草稿抽屉态通过 /ai-workbench?draftId=:id 控制（P-03）
  */
 export const ROUTE_PATH_MAP: Record<string, string> = {
-  workbench: '/workbench',
-  workbench_draft: '/workbench?draftId=:id',
+  workbench: '/ai-workbench',
+  workbench_draft: '/ai-workbench?draftId=:id',
   ai_workbench: '/ai-workbench',
   data_qa: '/ai-workbench/data-qa/:sessionId',
   tasks: '/tasks',

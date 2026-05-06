@@ -319,7 +319,7 @@ export default function TaskListState() {
                     <Download size={14} /> 导出列表
                   </button>
                   <button
-                    onClick={() => navigate('/workbench')}
+                    onClick={() => navigate('/ai-workbench')}
                     className="h-8 px-4 bg-blue-600 text-white rounded-lg text-[13px] font-medium shadow-sm hover:bg-blue-700 flex items-center gap-1.5 transition-colors"
                   >
                     <Plus size={14} /> 新建任务

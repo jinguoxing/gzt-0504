@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext, useCallback } from 'react';
 import type { ResultBlock, TableColumn, TableRow } from '@/types';
 import { cn } from '@/utils/cn';
 import { Download, AlertTriangle } from 'lucide-react';
+import { ResultBlockNavContext } from './ResultBlockNav';
 
 /**
  * TableResult — P0 模板 3
@@ -13,6 +14,20 @@ export default function TableResult({ block }: { block: ResultBlock }) {
   const totalRows = (block.data.totalRows as number) || rows.length;
   const badge = block.data.badge as string | undefined;
   const showExport = block.data.showExport !== false;
+  const nav = useContext(ResultBlockNavContext);
+
+  const isFieldTable = columns.some(c => c.key === 'field' || c.key === 'fieldName');
+
+  const handleRowClick = useCallback((row: TableRow) => {
+    if (nav.onFieldClick && row.field) {
+      nav.onFieldClick({
+        field: String(row.field),
+        semantic: String(row.semantic || ''),
+        confidence: row.confidence ?? 0,
+        source: String(row.source || ''),
+      });
+    }
+  }, [nav]);
 
   return (
     <div className="border border-gray-200 rounded-xl overflow-hidden">
@@ -46,7 +61,11 @@ export default function TableResult({ block }: { block: ResultBlock }) {
         </thead>
         <tbody className="divide-y divide-gray-100">
           {rows.map((row, i) => (
-            <tr key={i} className="hover:bg-gray-50 transition-colors">
+            <tr
+              key={i}
+              onClick={() => isFieldTable && handleRowClick(row)}
+              className={cn("transition-colors", isFieldTable ? "hover:bg-blue-50 cursor-pointer" : "hover:bg-gray-50")}
+            >
               {columns.map((col) => (
                 <td key={col.key} className="px-4 py-3 text-[13px]">
                   <CellRenderer columnKey={col.key} value={row[col.key]} row={row} />

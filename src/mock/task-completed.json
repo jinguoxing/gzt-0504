@@ -435,8 +435,23 @@
     "修复 15 条高影响冲突，数据质量得到显著提升。"
   ],
   "nextRecommendations": [
-    "进入映射修复任务",
-    "共享给团队",
-    "继续治理其他数据源"
+    {
+      "id": "rec-share",
+      "icon": "share",
+      "title": "共享给团队",
+      "description": "将治理报告与业务对象清单共享给供应链团队，同步治理结论"
+    },
+    {
+      "id": "rec-fix",
+      "icon": "fix",
+      "title": "发起修复任务",
+      "description": "针对 15 条冲突修复建议，创建跟踪任务并分配给数据owner"
+    },
+    {
+      "id": "rec-continue",
+      "icon": "continue",
+      "title": "继续治理其他数据源",
+      "description": "将治理流程扩展到物流、仓储等关联数据域"
+    }
   ]
 }

@@ -15,13 +15,10 @@ export default function AppRoutes() {
     <AppShell>
       <Routes>
         {/* 默认跳转到 AI 工作台 */}
-        <Route path="/" element={<Navigate to="/workbench" replace />} />
-
-        {/* AI 工作台首页 — 合同要求 /ai-workbench 可访问 */}
-        <Route path="/ai-workbench" element={<Home />} />
+        <Route path="/" element={<Navigate to="/ai-workbench" replace />} />
 
         {/* AI 工作台首页（支持 ?draftId=:id 草稿抽屉态） */}
-        <Route path="/workbench" element={<Home />} />
+        <Route path="/ai-workbench" element={<Home />} />
 
         {/* 任务中心摘要页 */}
         <Route path="/tasks" element={<TaskCenter />} />
@@ -48,7 +45,7 @@ export default function AppRoutes() {
         <Route path="/data-query" element={<Navigate to="/ai-workbench/data-qa/dqa_001" replace />} />
 
         {/* 兜底跳转 */}
-        <Route path="*" element={<Navigate to="/workbench" replace />} />
+        <Route path="*" element={<Navigate to="/ai-workbench" replace />} />
       </Routes>
     </AppShell>
   );

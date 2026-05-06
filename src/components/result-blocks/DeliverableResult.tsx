@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import type { ResultBlock, DeliverableItem } from '@/types';
 import { cn } from '@/utils/cn';
 import { FileText, Table, Download } from 'lucide-react';
+import { ResultBlockNavContext } from './ResultBlockNav';
 
 const iconMap: Record<string, { icon: React.ReactNode; bg: string; text: string }> = {
   PDF: { icon: <FileText size={16} />, bg: 'bg-blue-50', text: 'text-blue-600' },
@@ -16,6 +17,7 @@ const iconMap: Record<string, { icon: React.ReactNode; bg: string; text: string 
  */
 export default function DeliverableResult({ block }: { block: ResultBlock }) {
   const items = (block.data.items as DeliverableItem[]) || [];
+  const nav = useContext(ResultBlockNavContext);
 
   if (items.length === 0) return null;
 
@@ -30,6 +32,7 @@ export default function DeliverableResult({ block }: { block: ResultBlock }) {
           return (
             <div
               key={item.id}
+              onClick={() => nav.onDeliverableClick?.({ id: item.id, name: item.name, type: item.type, description: item.description })}
               className={cn(
                 "hover:border-blue-300 transition-colors cursor-pointer",
                 isGrid

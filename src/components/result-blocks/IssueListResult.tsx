@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import type { ResultBlock, IssueItem } from '@/types';
 import { cn } from '@/utils/cn';
+import { ResultBlockNavContext } from './ResultBlockNav';
 
 const severityConfig: Record<string, { border: string; bg: string; badgeBg: string; badgeText: string }> = {
   high: {
@@ -29,6 +30,7 @@ const severityConfig: Record<string, { border: string; bg: string; badgeBg: stri
  */
 export default function IssueListResult({ block }: { block: ResultBlock }) {
   const issues = (block.data.issues as IssueItem[]) || [];
+  const nav = useContext(ResultBlockNavContext);
 
   return (
     <div className="space-y-3">
@@ -36,7 +38,11 @@ export default function IssueListResult({ block }: { block: ResultBlock }) {
       {issues.map((issue) => {
         const config = severityConfig[issue.severity] || severityConfig.medium;
         return (
-          <div key={issue.id} className={cn("border rounded-xl p-4", config.border, config.bg)}>
+          <div
+            key={issue.id}
+            onClick={() => nav.onIssueClick?.({ id: issue.id, title: issue.title, severity: issue.severity, description: issue.description })}
+            className={cn("border rounded-xl p-4 cursor-pointer hover:shadow-sm transition-shadow", config.border, config.bg)}
+          >
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2">
                 <span className={cn("px-1.5 py-0.5 text-[10px] rounded font-bold", config.badgeBg, config.badgeText)}>

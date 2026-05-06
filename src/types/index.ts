@@ -279,6 +279,7 @@ export type ResultBlockType =
   | 'deliverable_list'
   | 'recommendation'
   | 'config_form'
+  | 'data_source_form'
   | 'fallback';
 
 /** 结果块状态 */
@@ -392,6 +393,73 @@ export interface GraphStats {
   nodeCount: number;
   edgeCount: number;
   placeholder?: string;
+}
+
+/** 阶段进度项 */
+export interface StageProgressItem {
+  id: string;
+  name: string;
+  status: 'COMPLETED' | 'RUNNING' | 'PENDING' | 'FAILED';
+  progress: number;
+  summary?: string;
+}
+
+/** 图谱节点 */
+export interface GraphNode {
+  id: string;
+  label: string;
+  type: string;
+}
+
+/** 图谱边 */
+export interface GraphEdge {
+  source: string;
+  target: string;
+  label?: string;
+}
+
+/** 推荐项 */
+export interface RecommendationItem {
+  id: string;
+  title: string;
+  description?: string;
+  confidence?: number;
+  reason?: string;
+}
+
+/** 配置表单项 */
+export interface ConfigFormItem {
+  key: string;
+  label: string;
+  type: 'select' | 'text' | 'number' | 'toggle';
+  value: string | number | boolean;
+  options?: Array<{ label: string; value: string | number }>;
+  description?: string;
+}
+
+/** 数据源选项（用于数据源表单） */
+export interface DataSourceOption {
+  id: string;
+  name: string;
+  type: string;
+  host: string;
+  port?: number;
+  database: string;
+  status: 'CONNECTED' | 'DISCONNECTED' | 'PERMISSION_REQUIRED';
+  selectedTableCount?: number;
+  scannedFieldCount?: number;
+}
+
+/** 数据源表单数据 */
+export interface DataSourceFormData {
+  selectedId: string;
+  options: DataSourceOption[];
+  showConnectionTest?: boolean;
+  connectionTestResult?: {
+    success: boolean;
+    latencyMs?: number;
+    message?: string;
+  };
 }
 
 // ==================== Task / Draft Core Types ====================
