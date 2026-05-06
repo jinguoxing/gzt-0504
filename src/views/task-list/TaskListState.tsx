@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Search, Filter, ChevronDown, Settings, Download, Plus, MoreHorizontal,
   List, Star, AlertCircle, Archive, LayoutGrid, CheckCircle2, Clock,
-  HelpCircle, Inbox, Users, Eye, SlidersHorizontal, X
+  HelpCircle, Inbox, Users, Eye, SlidersHorizontal, X, Trash2,
+  ArrowRightLeft, ExternalLink, StarOff, ArchiveRestore
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import mockData from '@/mock/task-list.json';
@@ -140,6 +141,8 @@ export default function TaskListState() {
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [columnSettingsOpen, setColumnSettingsOpen] = useState(false);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [actionVersion, setActionVersion] = useState(0);
   const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     COLUMN_CONFIG.forEach(col => { initial[col.key] = col.defaultVisible; });
@@ -155,6 +158,17 @@ export default function TaskListState() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  // Close action menu on outside click
+  useEffect(() => {
+    if (!activeMenuId) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-action-menu]')) setActiveMenuId(null);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [activeMenuId]);
 
   // Simulate loading
   useEffect(() => {
@@ -228,7 +242,7 @@ export default function TaskListState() {
           return true;
       }
     });
-  }, [activeScope, activeView]);
+  }, [activeScope, activeView, actionVersion]);
 
   // Step 2: View filtering on top of scope
   const viewTasks = useMemo(() => {
@@ -294,6 +308,29 @@ export default function TaskListState() {
   const goToStage = (taskId: string, stageId: string) => navigate(`/tasks/${taskId}?focusStage=${stageId}`);
   const goToReviews = (taskId: string) => navigate(`/tasks/reviews?taskId=${taskId}`);
   const goToTaskCenter = () => navigate('/tasks');
+
+  // Row-level action handlers
+  const handleToggleStar = (taskId: string) => {
+    const task = ALL_TASKS.find(t => t.id === taskId);
+    if (task) task.starred = !task.starred;
+    setActiveMenuId(null);
+    setActionVersion(v => v + 1);
+  };
+
+  const handleToggleArchive = (taskId: string) => {
+    const task = ALL_TASKS.find(t => t.id === taskId);
+    if (task) task.archived = !task.archived;
+    setActiveMenuId(null);
+    setActionVersion(v => v + 1);
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    const idx = ALL_TASKS.findIndex(t => t.id === taskId);
+    if (idx !== -1) ALL_TASKS.splice(idx, 1);
+    setActiveMenuId(null);
+    setSelectedTasks(prev => prev.filter(id => id !== taskId));
+    setActionVersion(v => v + 1);
+  };
 
   return (
     <div className="flex h-full bg-[#F8FAFC]">
@@ -633,10 +670,72 @@ export default function TaskListState() {
                               {row.updatedAt}
                             </td>
                           )}
-                          <td className="px-4 py-3.5 text-center">
-                            <button className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+                          <td className="px-4 py-3.5 text-center relative">
+                            <button
+                              onClick={() => setActiveMenuId(activeMenuId === row.id ? null : row.id)}
+                              className={cn(
+                                "p-1 rounded transition-colors",
+                                activeMenuId === row.id ? "text-gray-700 bg-gray-100" : "text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+                              )}
+                            >
                               <MoreHorizontal size={16} />
                             </button>
+                            {activeMenuId === row.id && (
+                              <div
+                                data-action-menu={row.id}
+                                className="absolute right-4 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1.5 w-[160px]"
+                              >
+                                <button
+                                  onClick={() => { goToTask(row.id); setActiveMenuId(null); }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                  <ExternalLink size={14} className="text-gray-400" /> 查看详情
+                                </button>
+                                <button
+                                  onClick={() => handleToggleStar(row.id)}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                  {row.starred
+                                    ? <><StarOff size={14} className="text-gray-400" /> 取消关注</>
+                                    : <><Star size={14} className="text-gray-400" /> 关注</>
+                                  }
+                                </button>
+                                {(row.status === '执行中' || row.status === '待确认' || row.status === '待审核' || row.status === '异常') && (
+                                  <button
+                                    onClick={() => setActiveMenuId(null)}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-gray-700 hover:bg-gray-50 transition-colors"
+                                  >
+                                    <ArrowRightLeft size={14} className="text-gray-400" /> 转派
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => setActiveMenuId(null)}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                  <Download size={14} className="text-gray-400" /> 导出
+                                </button>
+                                <button
+                                  onClick={() => handleToggleArchive(row.id)}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                  {row.archived
+                                    ? <><ArchiveRestore size={14} className="text-gray-400" /> 取消归档</>
+                                    : <><Archive size={14} className="text-gray-400" /> 归档</>
+                                  }
+                                </button>
+                                {(row.status === '已完成' || row.archived) && (
+                                  <>
+                                    <div className="border-t border-gray-100 my-1" />
+                                    <button
+                                      onClick={() => handleDeleteTask(row.id)}
+                                      className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-red-600 hover:bg-red-50 transition-colors"
+                                    >
+                                      <Trash2 size={14} /> 删除
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            )}
                           </td>
                         </tr>
                       ))
