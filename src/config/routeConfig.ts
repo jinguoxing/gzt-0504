@@ -18,6 +18,7 @@ export const ROUTE_PATH_MAP: Record<string, string> = {
   workbench_draft: '/ai-workbench?draftId=:id',
   ai_workbench: '/ai-workbench',
   data_qa: '/ai-workbench/data-qa/:sessionId',
+  data_qa_legacy: '/data-query/:sessionId',
   tasks: '/tasks',
   tasks_all: '/tasks/all',
   tasks_reviews: '/tasks/reviews',

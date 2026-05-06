@@ -327,5 +327,37 @@
         "最近一次数据质量检查通过"
       ]
     }
-  }
+  },
+  "sessions": [
+    {
+      "sessionId": "dqa_001",
+      "originalQuestion": "上个月采购金额是多少？",
+      "queryType": "single_metric"
+    },
+    {
+      "sessionId": "dqa_clarify_001",
+      "originalQuestion": "这个月销售怎么样？",
+      "queryType": "clarification"
+    },
+    {
+      "sessionId": "dqa_preflight_001",
+      "originalQuestion": "查过去 3 年所有采购明细",
+      "queryType": "detail_export"
+    },
+    {
+      "sessionId": "dqa_analysis_001",
+      "originalQuestion": "分析为什么本月采购金额上涨并生成报告",
+      "queryType": "analysis_plan"
+    },
+    {
+      "sessionId": "dqa_ranking_001",
+      "originalQuestion": "采购金额最高的前 10 个供应商是谁？",
+      "queryType": "ranking"
+    },
+    {
+      "sessionId": "dqa_breakdown_001",
+      "originalQuestion": "按供应商拆解采购金额",
+      "queryType": "breakdown"
+    }
+  ]
 }

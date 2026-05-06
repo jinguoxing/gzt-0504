@@ -203,7 +203,7 @@ export default function Home() {
 
   /** Simple keyword-based intent detection (mock) */
   const detectIntent = (text: string): 'data_qa' | 'governance_task' | 'unknown' => {
-    const qaKeywords = ['多少', '趋势', '排名', '同比', '环比', '拆解', '为什么', '上涨', '下降', '怎么算', '在哪里', '最高', '最低', '前 10', '前10'];
+    const qaKeywords = ['多少', '趋势', '排名', '同比', '环比', '拆解', '为什么', '上涨', '下降', '怎么算', '在哪里', '最高', '最低', '前 10', '前10', 'Top', '明细', '导出'];
     if (qaKeywords.some(k => text.includes(k))) return 'data_qa';
     const govKeywords = ['治理', '扫描', '建模', '语义', 'Schema', '字段'];
     if (govKeywords.some(k => text.includes(k))) return 'governance_task';
@@ -218,10 +218,20 @@ export default function Home() {
 
       const intent = detectIntent(text);
       if (intent === 'data_qa') {
-        // Intent detection flow: loading → navigate to data-qa page
+        // Create a new session with the user's real question
+        const sessionId = `dqa_${Date.now()}`;
+        sessionStorage.setItem(
+          `data-query-session:${sessionId}`,
+          JSON.stringify({
+            sessionId,
+            originalQuestion: text,
+            intent: 'data_qa',
+            createdAt: new Date().toISOString(),
+          })
+        );
         setIsDetecting(true);
         setTimeout(() => {
-          navigate(dataQaPath('dqa_001'));
+          navigate(dataQaPath(sessionId, { q: encodeURIComponent(text) }));
         }, 1200);
         return;
       }

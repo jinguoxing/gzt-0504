@@ -42,7 +42,9 @@ export type DataQaResultBlockType =
   | 'contribution_analysis'
   | 'recommendation'
   | 'clarification'
-  | 'fallback';
+  | 'fallback'
+  | 'query_preflight'
+  | 'analysis_plan';
 
 export type DataQaResultActionType =
   | 'followup'

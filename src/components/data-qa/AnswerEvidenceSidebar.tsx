@@ -41,6 +41,7 @@ export default function AnswerEvidenceSidebar({
   onPanelModeChange: (mode: RightPanelMode) => void;
   onClose: () => void;
 }) {
+  const [isSqlExpanded, setIsSqlExpanded] = useState(false);
   const [isContextExpanded, setIsContextExpanded] = useState(false);
 
   return (
@@ -90,7 +91,7 @@ export default function AnswerEvidenceSidebar({
             </div>
           </button>
 
-          {/* Data Evidence — clickable to detail */}
+          {/* Data Evidence — clickable to detail, with confidence integrated */}
           <button
             onClick={() => onPanelModeChange('source_detail')}
             className="w-full text-left border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white hover:ring-2 hover:ring-blue-100 transition-all"
@@ -112,42 +113,43 @@ export default function AnswerEvidenceSidebar({
                   <span className="text-[13px] text-gray-800 font-mono truncate">{evidence.dataEvidence.timeField}</span>
                 </div>
               </div>
+              {/* Confidence integrated into data evidence card */}
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">可信度</span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onPanelModeChange('confidence_detail'); }}
+                  className="text-[12px] text-green-600 font-bold flex items-center gap-1 hover:underline"
+                >
+                  <CheckCircle2 size={12} />
+                  {evidence.dataEvidence.confidence === 'high' ? '高' : evidence.dataEvidence.confidence === 'medium' ? '中' : '低'}
+                </button>
+              </div>
             </div>
           </button>
 
-          {/* Query Plan / SQL — clickable to detail */}
-          <button
-            onClick={() => onPanelModeChange('sql_detail')}
-            className="w-full text-left border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white hover:ring-2 hover:ring-blue-100 transition-all"
-          >
-            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+          {/* Query Plan / SQL — default collapsed */}
+          <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
+            <button
+              onClick={() => setIsSqlExpanded(!isSqlExpanded)}
+              className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+            >
               <h4 className="font-semibold text-[13px] text-gray-900 leading-none">查询计划 / SQL</h4>
-              <ChevronDown size={14} className="text-gray-400 -rotate-90" />
-            </div>
-            <div className="p-4">
-              <p className="text-[12px] text-gray-500">使用时间过滤、字段裁剪和指标口径匹配生成查询。</p>
-            </div>
-          </button>
+              <ChevronDown size={16} className={cn("text-gray-400 transition-transform duration-200", isSqlExpanded && "rotate-180")} />
+            </button>
+            {isSqlExpanded && (
+              <div className="p-4 border-t border-gray-100 bg-gray-50/30">
+                <p className="text-[12px] text-gray-500 mb-2">使用时间过滤、字段裁剪和指标口径匹配生成查询。</p>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onPanelModeChange('sql_detail'); }}
+                  className="text-[12px] text-blue-600 font-medium hover:underline"
+                >
+                  查看完整 SQL →
+                </button>
+              </div>
+            )}
+          </div>
 
-          {/* Confidence — clickable to detail */}
-          <button
-            onClick={() => onPanelModeChange('confidence_detail')}
-            className="w-full text-left border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white hover:ring-2 hover:ring-blue-100 transition-all"
-          >
-            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-              <h4 className="font-semibold text-[13px] text-gray-900 leading-none">可信度</h4>
-              <ChevronDown size={14} className="text-gray-400 -rotate-90" />
-            </div>
-            <div className="p-4 flex items-center justify-between">
-              <span className="text-[13px] text-gray-700">综合可信度</span>
-              <span className="text-[12px] text-green-600 font-bold flex items-center gap-1">
-                <CheckCircle2 size={12} />
-                {evidence.dataEvidence.confidence === 'high' ? '高' : evidence.dataEvidence.confidence === 'medium' ? '中' : '低'}
-              </span>
-            </div>
-          </button>
-
-          {/* Follow-up Context */}
+          {/* Follow-up Context — default collapsed */}
           <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
             <button
               onClick={() => setIsContextExpanded(!isContextExpanded)}

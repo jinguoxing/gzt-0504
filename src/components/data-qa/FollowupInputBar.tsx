@@ -18,8 +18,8 @@ export default function FollowupInputBar({
   disabled?: boolean;
 }) {
   return (
-    <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC] to-transparent">
-      <div className="max-w-[800px] mx-auto relative bg-white border border-gray-200 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] flex items-end p-2 transition-all focus-within:shadow-[0_4px_24px_rgba(37,99,235,0.12)] focus-within:border-blue-300">
+    <div className="p-4 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC] to-transparent flex-shrink-0">
+      <div className="max-w-[780px] mx-auto relative bg-white border border-gray-200 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] flex items-end p-2 transition-all focus-within:shadow-[0_4px_24px_rgba(37,99,235,0.12)] focus-within:border-blue-300">
         <button className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors shrink-0 mb-0.5">
           <FileText size={20} />
         </button>
@@ -52,7 +52,7 @@ export default function FollowupInputBar({
           </button>
         </div>
       </div>
-      <div className="text-center mt-3">
+      <div className="text-center mt-2">
         <span className="text-[11px] text-gray-400">内容由 Semovix Xino 智能生成，请核对重要数据结果。</span>
       </div>
     </div>

@@ -9,6 +9,10 @@ import ContributionAnalysisCard from './ContributionAnalysisCard';
 import DataTablePreviewCard from './DataTablePreviewCard';
 import ClarificationCard from './ClarificationCard';
 import FallbackResultCard from './FallbackResultCard';
+import QueryPreflightCard from './QueryPreflightCard';
+import AnalysisPlanCard from './AnalysisPlanCard';
+import RankingCard from './RankingCard';
+import BreakdownCard from './BreakdownCard';
 
 export type OnAction = (action: DataQaResultAction, block: DataQaResultBlock) => void;
 export type OnFollowup = (question: string) => void;
@@ -50,6 +54,14 @@ export default function DataQaResultBlockRenderer({
       return <DataTablePreviewCard {...commonProps} />;
     case 'clarification':
       return <ClarificationCard block={block} onConfirm={onClarify} onCancel={onClarifyCancel} />;
+    case 'query_preflight':
+      return <QueryPreflightCard block={block} />;
+    case 'analysis_plan':
+      return <AnalysisPlanCard block={block} />;
+    case 'ranking':
+      return <RankingCard block={block} />;
+    case 'breakdown':
+      return <BreakdownCard block={block} />;
     default:
       return <FallbackResultCard block={block} />;
   }

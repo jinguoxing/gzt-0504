@@ -29,7 +29,7 @@ export default function QuestionThread({
   const renderResultBlocks = (blocks: DataQaResultBlock[]) => (
     <div className="w-full grid grid-cols-2 gap-4 mt-2">
       {blocks.map((block) => {
-        const isFullWidth = block.type === 'data_table' || block.type === 'clarification';
+        const isFullWidth = block.type === 'data_table' || block.type === 'clarification' || block.type === 'ranking' || block.type === 'query_preflight' || block.type === 'analysis_plan';
         return (
           <div key={block.id} className={isFullWidth ? 'col-span-2' : undefined}>
             <DataQaResultBlockRenderer
@@ -46,8 +46,8 @@ export default function QuestionThread({
   );
 
   return (
-    <div className="flex-1 overflow-y-auto w-full flex justify-center py-10 px-8 pb-32">
-      <div className="w-full max-w-[840px] space-y-10">
+    <div className="flex-1 overflow-y-auto w-full flex justify-center py-6 px-6 pb-36">
+      <div className="w-full max-w-[780px] space-y-6">
         {messages.map((msg) => {
           if (msg.role === 'user') {
             return <UserQuestionRow key={msg.id} msg={msg} userName={userName} />;
@@ -85,13 +85,15 @@ export default function QuestionThread({
  */
 function UserQuestionRow({ msg, userName }: { key?: string; msg: DataQaMessage; userName: string }) {
   return (
-    <div className="flex flex-col items-end gap-1.5">
-      <div className="flex items-center gap-2 text-[12px] text-gray-400">
-        <span className="font-semibold text-gray-900">{userName}</span>
-        <span>{msg.displayTime}</span>
-      </div>
-      <div className="text-[14px] text-gray-900 max-w-xl leading-relaxed">
-        {msg.text}
+    <div className="flex justify-end">
+      <div className="w-[45%] min-w-[280px]">
+        <div className="flex items-center gap-2 mb-1 justify-end">
+          <span className="text-[12px] text-gray-400">{msg.displayTime}</span>
+          <span className="font-medium text-[13px] text-gray-600">{userName}</span>
+        </div>
+        <div className="bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-2.5">
+          <p className="text-[14px] text-gray-800 leading-relaxed">{msg.text}</p>
+        </div>
       </div>
     </div>
   );

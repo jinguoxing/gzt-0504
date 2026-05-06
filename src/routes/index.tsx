@@ -43,6 +43,7 @@ export default function AppRoutes() {
 
         {/* 旧路由兼容跳转 */}
         <Route path="/data-query" element={<Navigate to="/ai-workbench/data-qa/dqa_001" replace />} />
+        <Route path="/data-query/:sessionId" element={<DataQueryState />} />
 
         {/* 兜底跳转 */}
         <Route path="*" element={<Navigate to="/ai-workbench" replace />} />
