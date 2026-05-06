@@ -73,7 +73,7 @@ type DetailPanel =
 
 // ==================== Sub-components ====================
 
-/** 单条 Xino 消息块 */
+/** 单条 Xino 消息块 — 左侧工作输出，两层结构 */
 function XinoMessageBlock({ msg }: { msg: XinoMessage }) {
   const { icon, iconBg } = getXinoIconConfig(msg);
   const time = fmtTime(msg.createdAt);
@@ -85,6 +85,7 @@ function XinoMessageBlock({ msg }: { msg: XinoMessage }) {
         {icon}
       </div>
       <div className="flex-1 min-w-0">
+        {/* 第一层：文本说明 */}
         <div className="flex items-center gap-2 mb-1.5">
           <span className="font-semibold text-[13px] text-gray-900">Xino</span>
           <span className="text-[12px] text-gray-400">{time}</span>
@@ -93,8 +94,10 @@ function XinoMessageBlock({ msg }: { msg: XinoMessage }) {
           )}
         </div>
         <p className="text-[14px] text-gray-700 leading-relaxed">{msg.text}</p>
+
+        {/* 第二层：结构化结果模板 */}
         {hasBlocks && (
-          <div className="mt-4 space-y-4">
+          <div className="mt-5 space-y-4">
             {msg.resultBlocks!.map((block) => (
               <div key={block.id} className="bg-white rounded-xl border border-gray-200/80 p-5">
                 <div className="flex items-center justify-between mb-3">
@@ -111,18 +114,18 @@ function XinoMessageBlock({ msg }: { msg: XinoMessage }) {
   );
 }
 
-/** 用户消息 — 右侧指令块 */
+/** 用户消息 — 右侧轻量指令块 */
 function UserMessageBlock({ msg }: { msg: XinoMessage }) {
   const time = fmtTime(msg.createdAt);
   return (
     <div className="flex justify-end">
-      <div className="max-w-md">
+      <div className="w-[45%] min-w-[280px]">
         <div className="flex items-center gap-2 mb-1 justify-end">
           <span className="text-[12px] text-gray-400">{time}</span>
-          <span className="font-medium text-[13px] text-gray-700">{msg.authorName}</span>
+          <span className="font-medium text-[13px] text-gray-600">{msg.authorName}</span>
         </div>
-        <div className="bg-blue-400 text-white rounded-xl rounded-tr-sm px-4 py-2.5">
-          <p className="text-[14px] leading-relaxed">{msg.text}</p>
+        <div className="bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-2.5">
+          <p className="text-[14px] text-gray-800 leading-relaxed">{msg.text}</p>
         </div>
       </div>
     </div>
@@ -257,9 +260,7 @@ export default function ExecutionState() {
               <div className="flex items-center gap-4 text-[13px] text-gray-500">
                 <span>项目：{task.project.name}</span>
                 <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <span>创建人：{task.creator.name}</span>
-                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <span>当前阶段：<span className="font-medium text-gray-700">{currentStage?.index} / {task.stages.length}</span></span>
+                <span>当前阶段：<span className="font-medium text-gray-700">{currentStage?.name}</span> <span className="text-gray-400">{currentStage?.index}/{task.stages.length}</span></span>
                 <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
                 <span>整体进度：<span className="font-medium text-gray-700">{task.progress}%</span></span>
                 <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
@@ -304,36 +305,11 @@ export default function ExecutionState() {
                 <span className="text-[12px] text-gray-400 ml-auto">已完成</span>
               </div>
 
-              {/* P-09: Task Focus Card */}
-              <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 shadow-[0_8px_30px_rgba(37,99,235,0.2)] text-white">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="text-[11px] font-bold text-blue-200 uppercase tracking-widest">当前任务焦点</div>
-                  <div className="flex-1"></div>
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/15 rounded-md text-[12px] font-medium backdrop-blur-sm">
-                    阶段 {currentStage?.index} / {task.stages.length}
-                  </div>
-                </div>
-                <div className="flex items-end justify-between mb-4">
-                  <h3 className="text-[22px] font-bold text-white leading-tight">{currentStage?.name}</h3>
-                  <div className="text-[36px] font-bold text-white leading-none tracking-tight">{task.progress}%</div>
-                </div>
-                <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden mb-5">
-                  <div className="h-full bg-white rounded-full transition-all duration-500 relative" style={{ width: `${task.progress}%` }}>
-                    <div className="absolute inset-0 bg-white/30 animate-pulse"></div>
-                  </div>
-                </div>
-                <p className="text-[14px] text-blue-100 leading-relaxed mb-5">{currentStage?.summary}</p>
-                <div className="flex flex-wrap gap-3">
-                  <button className="px-4 py-2 bg-white hover:bg-blue-50 text-blue-700 rounded-lg text-[13px] font-semibold transition-colors shadow-sm">
-                    查看冲突字段
-                  </button>
-                  <button className="px-4 py-2 bg-white/15 hover:bg-white/25 text-white rounded-lg text-[13px] font-semibold transition-colors border border-white/20 backdrop-blur-sm">
-                    批量确认高置信字段
-                  </button>
-                  <button className="px-4 py-2 bg-white/15 hover:bg-white/25 text-white rounded-lg text-[13px] font-semibold transition-colors border border-white/20 backdrop-blur-sm">
-                    继续生成对象模型
-                  </button>
-                </div>
+              {/* Pending items alert strip */}
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-50 border border-amber-200/80 text-[13px] text-amber-800">
+                <AlertTriangle size={14} className="text-amber-500 flex-shrink-0" />
+                <span>待处理：41 个冲突字段、326 个待确认字段，建议先处理高风险冲突。</span>
+                <button className="ml-auto text-[12px] font-medium text-amber-600 hover:text-amber-800 whitespace-nowrap transition-colors">查看详情 →</button>
               </div>
 
               {/* Stage-grouped Conversation Stream */}
@@ -682,29 +658,22 @@ function TaskSidePanel({ activeTab, setActiveTab, isPlanExpanded, setIsPlanExpan
 }) {
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 bg-blue-50/60 border-b border-blue-100 flex items-center gap-2 flex-shrink-0">
-        <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-        <span className="text-[12px] font-medium text-blue-700">
-          执行态 · 阶段 {currentStage?.index}/{task.stages.length} · {currentStage?.name}
-        </span>
-        <span className="text-[11px] text-blue-500 ml-auto">进度 {task.progress}%</span>
-      </div>
       <div className="flex border-b border-[#E5E7EB] flex-shrink-0">
         <button
           onClick={() => setActiveTab('plan')}
-          className={cn("flex-1 py-4 text-[14px] transition-colors", activeTab === 'plan' ? "font-semibold text-blue-600 border-b-2 border-blue-600" : "font-medium text-gray-500 hover:text-gray-900 border-b-2 border-transparent")}
+          className={cn("flex-1 py-3.5 text-[14px] transition-colors", activeTab === 'plan' ? "font-semibold text-blue-600 border-b-2 border-blue-600" : "font-medium text-gray-500 hover:text-gray-900 border-b-2 border-transparent")}
         >任务计划</button>
         <button
           onClick={() => setActiveTab('detail')}
-          className={cn("flex-1 py-4 text-[14px] transition-colors", activeTab === 'detail' ? "font-semibold text-blue-600 border-b-2 border-blue-600" : "font-medium text-gray-500 hover:text-gray-900 border-b-2 border-transparent")}
+          className={cn("flex-1 py-3.5 text-[14px] transition-colors", activeTab === 'detail' ? "font-semibold text-blue-600 border-b-2 border-blue-600" : "font-medium text-gray-500 hover:text-gray-900 border-b-2 border-transparent")}
         >任务详情</button>
       </div>
       <div className="flex-1 overflow-y-auto w-full">
-        <div className="p-6 space-y-8">
+        <div className="p-5 space-y-6">
           {activeTab === 'plan' ? (
-            <PlanTab isPlanExpanded={isPlanExpanded} setIsPlanExpanded={setIsPlanExpanded} onIssueClick={onIssueClick} onDeliverableClick={onDeliverableClick} />
+            <PlanTab isPlanExpanded={isPlanExpanded} setIsPlanExpanded={setIsPlanExpanded} />
           ) : (
-            <DetailTab />
+            <DetailTab onIssueClick={onIssueClick} onDeliverableClick={onDeliverableClick} />
           )}
           <div className="h-4"></div>
         </div>
@@ -713,14 +682,12 @@ function TaskSidePanel({ activeTab, setActiveTab, isPlanExpanded, setIsPlanExpan
   );
 }
 
-function PlanTab({ isPlanExpanded, setIsPlanExpanded, onIssueClick, onDeliverableClick }: {
+function PlanTab({ isPlanExpanded, setIsPlanExpanded }: {
   isPlanExpanded: boolean;
   setIsPlanExpanded: (v: boolean) => void;
-  onIssueClick: (issue: { id: string; title: string; severity: string }) => void;
-  onDeliverableClick: (deliv: { id: string; name: string; type: string; description?: string }) => void;
 }) {
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300">
       {/* Progress */}
       <div>
         <div className="flex items-center justify-between mb-2 cursor-pointer group" onClick={() => setIsPlanExpanded(!isPlanExpanded)}>
@@ -728,17 +695,27 @@ function PlanTab({ isPlanExpanded, setIsPlanExpanded, onIssueClick, onDeliverabl
             <span className="text-[13px] font-bold text-gray-900 tracking-wide uppercase group-hover:text-blue-600 transition-colors">整体进度</span>
             <ChevronDown size={14} className={cn("text-gray-400 group-hover:text-blue-500 transition-transform duration-200", isPlanExpanded && "rotate-180")} />
           </div>
-          <span className="text-[14px] font-bold text-blue-600">{task.progress}%</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] text-gray-500">已完成 {completedStages.length} / {task.stages.length} 个阶段</span>
+            <span className="text-[14px] font-bold text-blue-600">{task.progress}%</span>
+          </div>
         </div>
-        <div className={cn("w-full h-2 bg-gray-100 rounded-full overflow-hidden transition-all", isPlanExpanded && "mb-6")}>
-          <div className="h-full bg-blue-500 rounded-full" style={{ width: `${task.progress}%` }}></div>
+        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-6">
+          <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${task.progress}%` }}></div>
         </div>
-        {isPlanExpanded && <StageTimeline />}
+        <StageTimeline />
       </div>
+    </div>
+  );
+}
 
-      <div className="w-full h-px bg-[#E5E7EB]"></div>
-
-      {/* Data Source */}
+function DetailTab({ onIssueClick, onDeliverableClick }: {
+  onIssueClick: (issue: { id: string; title: string; severity: string }) => void;
+  onDeliverableClick: (deliv: { id: string; name: string; type: string; description?: string }) => void;
+}) {
+  return (
+    <div className="space-y-8 animate-in fade-in duration-300">
+      {/* Section 1: Context / Data Source */}
       <div>
         <h4 className="text-[14px] font-semibold text-gray-900 mb-3">上下文 / 数据源</h4>
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
@@ -758,6 +735,10 @@ function PlanTab({ isPlanExpanded, setIsPlanExpanded, onIssueClick, onDeliverabl
               <span className="text-gray-700 font-medium">{task.dataSource.type}</span>
             </div>
             <div className="flex items-center justify-between text-[12px]">
+              <span className="text-gray-500">主机</span>
+              <span className="text-gray-700 font-medium">{task.dataSource.host}</span>
+            </div>
+            <div className="flex items-center justify-between text-[12px]">
               <span className="text-gray-500">扫描范围</span>
               <span className="text-gray-700 font-medium">{task.dataSource.database}</span>
             </div>
@@ -773,7 +754,9 @@ function PlanTab({ isPlanExpanded, setIsPlanExpanded, onIssueClick, onDeliverabl
         </div>
       </div>
 
-      {/* Risks — clickable */}
+      <div className="w-full h-px bg-[#E5E7EB]"></div>
+
+      {/* Section 2: Risks */}
       <div>
         <h4 className="flex items-center gap-2 text-[14px] font-semibold text-gray-900 mb-3">
           <AlertCircle size={16} className="text-red-500" />
@@ -801,7 +784,9 @@ function PlanTab({ isPlanExpanded, setIsPlanExpanded, onIssueClick, onDeliverabl
         </div>
       </div>
 
-      {/* Deliverables — clickable */}
+      <div className="w-full h-px bg-[#E5E7EB]"></div>
+
+      {/* Section 3: Deliverables */}
       <div>
         <h4 className="text-[14px] font-semibold text-gray-900 mb-3">最新交付物</h4>
         <div className="space-y-2">
@@ -823,81 +808,6 @@ function PlanTab({ isPlanExpanded, setIsPlanExpanded, onIssueClick, onDeliverabl
               <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-white text-gray-400 hover:text-blue-600 transition-colors">
                 <Download size={14} />
               </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DetailTab() {
-  return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div>
-        <h4 className="text-[14px] font-semibold text-gray-900 mb-3">基本信息</h4>
-        <div className="space-y-3">
-          {[
-            { label: '任务 ID', value: task.id },
-            { label: '创建人', value: task.creator.name },
-            { label: '创建时间', value: '今天 09:30' },
-          ].map(row => (
-            <div key={row.label} className="flex justify-between items-center text-[13px]">
-              <span className="text-gray-500">{row.label}</span>
-              <span className="font-medium text-gray-900">{row.value}</span>
-            </div>
-          ))}
-          <div className="flex justify-between items-center text-[13px]">
-            <span className="text-gray-500">当前状态</span>
-            <div className="flex items-center gap-1.5 font-medium text-blue-600">
-              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-              执行中 (阶段 {currentStage?.index}/{task.stages.length})
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="w-full h-px bg-[#E5E7EB]"></div>
-      <div>
-        <h4 className="text-[14px] font-semibold text-gray-900 mb-3">实施范围</h4>
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 space-y-2">
-          <div className="text-[13px] text-gray-700 flex">
-            <span className="text-gray-500 w-[60px] flex-shrink-0">连接：</span>
-            <span className="font-medium">{task.dataSource.name}<br /><span className="text-[12px] font-normal text-gray-500">{task.dataSource.type} ({task.dataSource.host})</span></span>
-          </div>
-          <div className="text-[13px] text-gray-700 flex">
-            <span className="text-gray-500 w-[60px] flex-shrink-0">Schema：</span>
-            <span className="font-medium">{task.dataSource.database}</span>
-          </div>
-          <div className="text-[13px] text-gray-700 flex">
-            <span className="text-gray-500 w-[60px] flex-shrink-0">排除规则：</span>
-            <span className="font-medium">backup_*, temp_*</span>
-          </div>
-        </div>
-      </div>
-      <div className="w-full h-px bg-[#E5E7EB]"></div>
-      <div>
-        <h4 className="text-[14px] font-semibold text-gray-900 mb-3">运行配置</h4>
-        <div className="space-y-3">
-          {[
-            { label: '执行并行度', value: '10 线程' },
-            { label: '自动确认阈值', value: '置信度 > 0.95' },
-            { label: '异常中断策略', value: '超过 50 个冲突时暂停' },
-            { label: '底层模型支撑', value: 'Gemini 3.1 Pro + 业务词典向量库' },
-          ].map(row => (
-            <div key={row.label} className="flex justify-between items-center text-[13px]">
-              <span className="text-gray-500">{row.label}</span>
-              <span className="font-medium text-gray-900">{row.value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="w-full h-px bg-[#E5E7EB]"></div>
-      <div>
-        <h4 className="text-[14px] font-semibold text-gray-900 mb-3">参考信息源</h4>
-        <div className="space-y-2">
-          {task.contextResources.map((f) => (
-            <div key={f.id} className="flex items-center gap-2 text-[13px] text-gray-700">
-              <FileText size={14} className="text-gray-400" /> {f.name}
             </div>
           ))}
         </div>
