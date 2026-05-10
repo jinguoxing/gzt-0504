@@ -1,0 +1,61 @@
+{
+  "sessionId": "dqa_001",
+  "status": "completed",
+  "title": "问数结果已保存",
+  "summary": {
+    "question": "上个月采购金额是多少？",
+    "answer": "¥ 12,486,320",
+    "mom": "+8.6%",
+    "yoy": "+12.3%",
+    "period": "2026-04-01 至 2026-04-30",
+    "definition": "已审核采购订单含税金额"
+  },
+  "followupChain": [
+    "上个月采购金额是多少？",
+    "为什么本月采购金额上涨？"
+  ],
+  "deliverables": [
+    {
+      "id": "file_001",
+      "filename": "采购金额问数结果.xlsx",
+      "fileType": "xlsx",
+      "purpose": "导出本次问数明细",
+      "createdAt": "2026-05-04 09:45"
+    },
+    {
+      "id": "file_002",
+      "filename": "采购金额变化原因分析.pdf",
+      "fileType": "pdf",
+      "purpose": "管理层报告",
+      "createdAt": "2026-05-04 09:46"
+    },
+    {
+      "id": "file_003",
+      "filename": "查询 SQL.txt",
+      "fileType": "txt",
+      "purpose": "复查查询逻辑",
+      "createdAt": "2026-05-04 09:46"
+    },
+    {
+      "id": "file_004",
+      "filename": "答案依据.json",
+      "fileType": "json",
+      "purpose": "系统复用",
+      "createdAt": "2026-05-04 09:46"
+    }
+  ],
+  "archive": {
+    "savedAt": "2026-05-04 09:45",
+    "createdBy": "李桐",
+    "dataSource": "supply_chain_prod",
+    "confidence": "高",
+    "shared": false
+  },
+  "nextActions": [
+    "继续追问",
+    "按供应商做深度分析",
+    "发起采购金额异常治理任务",
+    "生成管理层报告",
+    "共享给团队"
+  ]
+}

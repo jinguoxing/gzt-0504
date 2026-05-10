@@ -1,0 +1,339 @@
+{
+  "sessionId": "dqa_001",
+  "projectId": "proj_supply_chain",
+  "projectName": "供应链语义治理项目",
+  "status": "answer_ready",
+  "originalQuestion": "上个月采购金额是多少？",
+  "queryType": "single_metric",
+  "createdBy": {
+    "id": "u_litong",
+    "name": "李桐",
+    "email": "liming@semovix.com"
+  },
+  "createdAt": "2026-05-04T09:32:00+08:00",
+  "updatedAt": "2026-05-04T09:34:00+08:00",
+  "messages": [
+    {
+      "id": "msg_user_001",
+      "role": "user",
+      "displayTime": "09:32",
+      "text": "上个月采购金额是多少？"
+    },
+    {
+      "id": "msg_xino_001",
+      "role": "xino",
+      "displayTime": "09:32",
+      "text": "上个月采购金额为 ¥12,486,320，环比增长 8.6%，同比增长 12.3%。本次使用“已审核采购订单含税金额”口径，统计周期为 2026-04-01 至 2026-04-30。下面展示核心结果、趋势和数据依据。",
+      "resultBlocks": [
+        {
+          "id": "rb_metric_001",
+          "type": "single_metric_answer",
+          "title": "上个月采购金额",
+          "data": {
+            "metricName": "采购金额",
+            "formattedValue": "¥ 12,486,320",
+            "value": 12486320,
+            "mom": 0.086,
+            "yoy": 0.123,
+            "period": "2026-04-01 至 2026-04-30",
+            "definition": "已审核采购订单含税金额"
+          }
+        },
+        {
+          "id": "rb_trend_001",
+          "type": "comparison_trend",
+          "title": "采购金额对比与趋势",
+          "data": {
+            "current": {
+              "label": "本月",
+              "formattedValue": "¥ 13,560,000",
+              "value": 13560000
+            },
+            "previous": {
+              "label": "上月",
+              "formattedValue": "¥ 12,486,320",
+              "value": 12486320
+            },
+            "delta": {
+              "formattedValue": "+¥ 1,073,680",
+              "value": 1073680,
+              "rate": 0.086
+            },
+            "trend": [
+              {
+                "period": "2025-05",
+                "value": 650
+              },
+              {
+                "period": "2025-06",
+                "value": 780
+              },
+              {
+                "period": "2025-07",
+                "value": 690
+              },
+              {
+                "period": "2025-08",
+                "value": 720
+              },
+              {
+                "period": "2025-09",
+                "value": 760
+              },
+              {
+                "period": "2025-10",
+                "value": 700
+              },
+              {
+                "period": "2025-11",
+                "value": 1180
+              },
+              {
+                "period": "2025-12",
+                "value": 950
+              },
+              {
+                "period": "2026-01",
+                "value": 1120
+              },
+              {
+                "period": "2026-02",
+                "value": 900
+              },
+              {
+                "period": "2026-03",
+                "value": 1180
+              },
+              {
+                "period": "2026-04",
+                "value": 1248
+              }
+            ],
+            "keyFindings": [
+              "4 月采购金额最高",
+              "近 3 个月持续上升"
+            ]
+          }
+        },
+        {
+          "id": "rb_evidence_001",
+          "type": "data_source_trace",
+          "title": "数据依据",
+          "data": {
+            "dataSource": "supply_chain_prod",
+            "sourceTable": "dwd_scm_purchase_order_line",
+            "sourceField": "amount_tax_included",
+            "updatedAt": "2026-05-04 09:30",
+            "confidence": "high"
+          },
+          "actions": [
+            {
+              "id": "open_source",
+              "label": "查看完整来源",
+              "actionType": "open_source"
+            },
+            {
+              "id": "open_sql",
+              "label": "查看 SQL",
+              "actionType": "open_sql"
+            }
+          ]
+        },
+        {
+          "id": "rb_followups_001",
+          "type": "recommendation",
+          "title": "你还可以继续问",
+          "data": {
+            "items": [
+              "为什么上涨？",
+              "按供应商拆解",
+              "看最近 30 天趋势",
+              "导出明细"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "msg_user_002",
+      "role": "user",
+      "displayTime": "09:34",
+      "text": "为什么本月采购金额上涨？"
+    },
+    {
+      "id": "msg_xino_002",
+      "role": "xino",
+      "displayTime": "09:34",
+      "text": "我从品类、供应商和大额订单三个角度做了归因分析。",
+      "resultBlocks": [
+        {
+          "id": "rb_insight_001",
+          "type": "insight_explanation",
+          "title": "为什么本月采购金额上涨？",
+          "data": {
+            "conclusion": "本月采购金额环比上涨 8.6%，主要由原材料采购增加驱动。",
+            "reasons": [
+              "原材料采购金额增加 ¥820,000，贡献 76%",
+              "新增 3 个大额采购订单",
+              "供应商 A 单价上涨 5.2%"
+            ]
+          }
+        },
+        {
+          "id": "rb_contribution_001",
+          "type": "contribution_analysis",
+          "title": "贡献度分析",
+          "data": {
+            "items": [
+              {
+                "label": "原材料采购增加",
+                "formattedValue": "¥820,000",
+                "percent": 0.76
+              },
+              {
+                "label": "新增大额订单",
+                "formattedValue": "¥160,000",
+                "percent": 0.15
+              },
+              {
+                "label": "单价上涨",
+                "formattedValue": "¥93,680",
+                "percent": 0.09
+              }
+            ]
+          }
+        },
+        {
+          "id": "rb_actions_001",
+          "type": "recommendation",
+          "title": "后续动作",
+          "data": {
+            "items": [
+              "查看原材料明细",
+              "查看异常订单",
+              "生成分析报告"
+            ]
+          }
+        },
+        {
+          "id": "rb_table_001",
+          "type": "data_table",
+          "title": "采购订单明细（节选）",
+          "data": {
+            "filters": [
+              "时间=2026-04",
+              "状态=已审核"
+            ],
+            "columns": [
+              {
+                "key": "orderNo",
+                "label": "订单号"
+              },
+              {
+                "key": "supplier",
+                "label": "供应商"
+              },
+              {
+                "key": "orderDate",
+                "label": "订单日期"
+              },
+              {
+                "key": "amount",
+                "label": "金额"
+              },
+              {
+                "key": "status",
+                "label": "状态"
+              }
+            ],
+            "rows": [
+              {
+                "id": "row_001",
+                "orderNo": "PO2026040101",
+                "supplier": "供应商 A",
+                "orderDate": "2026-04-02",
+                "amount": "¥1,280,000",
+                "status": "已审核"
+              },
+              {
+                "id": "row_002",
+                "orderNo": "PO2026040105",
+                "supplier": "供应商 B",
+                "orderDate": "2026-04-05",
+                "amount": "¥980,000",
+                "status": "已审核"
+              },
+              {
+                "id": "row_003",
+                "orderNo": "PO2026040112",
+                "supplier": "供应商 C",
+                "orderDate": "2026-04-08",
+                "amount": "¥750,000",
+                "status": "已审核"
+              }
+            ],
+            "total": 1236,
+            "previewLimit": 3
+          }
+        }
+      ]
+    }
+  ],
+  "evidence": {
+    "metricScope": {
+      "metricName": "采购金额",
+      "timeRange": {
+        "label": "上个月",
+        "start": "2026-04-01",
+        "end": "2026-04-30"
+      },
+      "businessDomain": "供应链业务域",
+      "calculationDefinition": "已审核采购订单含税金额",
+      "filters": [
+        "订单状态 = 已审核",
+        "订单类型 ≠ 作废"
+      ]
+    },
+    "dataEvidence": {
+      "dataSource": "supply_chain_prod",
+      "sourceTable": "dwd_scm_purchase_order_line",
+      "sourceField": "amount_tax_included",
+      "timeField": "po_approved_date",
+      "updatedAt": "2026-05-04 09:30",
+      "permissionStatus": "queryable",
+      "qualityStatus": "passed",
+      "confidence": "high",
+      "confidenceReasons": [
+        "指标口径已注册",
+        "来源表为 DWD 明细表",
+        "字段注释完整",
+        "最近同步成功"
+      ]
+    },
+    "queryPlan": {
+      "defaultCollapsed": true,
+      "steps": [
+        "匹配指标：采购金额",
+        "确定时间范围：上个月",
+        "选择事实表：dwd_scm_purchase_order_line",
+        "应用过滤条件：订单状态 = 已审核",
+        "聚合方式：SUM(amount_tax_included)",
+        "返回结果：单指标 + 环比 + 趋势"
+      ],
+      "sql": "SELECT SUM(amount_tax_included) AS purchase_amount FROM dwd_scm_purchase_order_line WHERE po_approved_date BETWEEN '2026-04-01' AND '2026-04-30' AND order_status = 'approved';",
+      "execution": {
+        "durationMs": 2300,
+        "scannedRows": 184320,
+        "cacheStatus": "miss",
+        "indexUsed": "po_approved_date_idx"
+      }
+    },
+    "followupContext": {
+      "questions": [
+        "上个月采购金额是多少？",
+        "为什么本月采购金额上涨？"
+      ],
+      "currentAnalysisFocus": "采购金额变化归因"
+    }
+  }
+}

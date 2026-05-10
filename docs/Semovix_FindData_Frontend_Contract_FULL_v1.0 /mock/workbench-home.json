@@ -1,0 +1,87 @@
+{
+  "project": {
+    "id": "proj_supply_chain",
+    "name": "供应链语义治理项目"
+  },
+  "hero": {
+    "title": "今天想让 Xino 帮你完成什么？",
+    "subtitle": "直接描述你的问题或目标，Xino 会理解意图并选择合适的工作方式。",
+    "placeholder": "输入问题或任务目标，或 @ 指标 / 数据源 / 文件 / 知识库 ..."
+  },
+  "examples": [
+    {
+      "id": "ex1",
+      "text": "上个月采购金额是多少？",
+      "intent": "data_qa",
+      "queryType": "single_metric"
+    },
+    {
+      "id": "ex2",
+      "text": "最近 12 个月采购金额趋势",
+      "intent": "data_qa",
+      "queryType": "trend"
+    },
+    {
+      "id": "ex3",
+      "text": "按供应商拆解采购金额",
+      "intent": "data_qa",
+      "queryType": "breakdown"
+    },
+    {
+      "id": "ex4",
+      "text": "为什么本月采购金额上涨？",
+      "intent": "data_qa",
+      "queryType": "insight"
+    }
+  ],
+  "recentQuestions": [
+    {
+      "id": "dqa_001",
+      "title": "上个月采购金额是多少？",
+      "updatedAt": "09:32",
+      "status": "answer_ready"
+    },
+    {
+      "id": "dqa_002",
+      "title": "本月采购上涨原因分析",
+      "updatedAt": "09:34",
+      "status": "answer_ready"
+    },
+    {
+      "id": "dqa_003",
+      "title": "供应商绩效分析",
+      "updatedAt": "昨天",
+      "status": "saved"
+    },
+    {
+      "id": "dqa_004",
+      "title": "库存周转天数趋势",
+      "updatedAt": "昨天",
+      "status": "saved"
+    }
+  ],
+  "commonResources": [
+    {
+      "id": "metric_purchase_amount",
+      "type": "metric",
+      "name": "采购金额"
+    },
+    {
+      "id": "ds_supply_chain_prod",
+      "type": "data_source",
+      "name": "supply_chain_prod"
+    },
+    {
+      "id": "table_po_line",
+      "type": "table",
+      "name": "dwd_scm_purchase_order_line"
+    }
+  ],
+  "intentDetectionSample": {
+    "input": "上个月采购金额是多少？",
+    "intent": "data_qa",
+    "confidence": 0.94,
+    "queryType": "single_metric",
+    "targetRoute": "/ai-workbench/data-qa/dqa_001"
+  }
+}

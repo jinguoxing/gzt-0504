@@ -1,0 +1,66 @@
+{
+  "rightPanelMode": "source_detail",
+  "metricDetail": {
+    "metricName": "采购金额",
+    "businessDefinition": "统计指定时间范围内已审核采购订单的含税金额",
+    "formula": "SUM(amount_tax_included)",
+    "timeField": "po_approved_date",
+    "defaultFilters": [
+      "order_status = approved",
+      "order_type != void"
+    ],
+    "domain": "供应链",
+    "status": "已注册",
+    "lastUpdated": "2026-05-01"
+  },
+  "sourceDetail": {
+    "dataSource": "supply_chain_prod",
+    "sourceType": "MySQL",
+    "sourceTable": "dwd_scm_purchase_order_line",
+    "sourceField": "amount_tax_included",
+    "timeField": "po_approved_date",
+    "relatedDimensions": [
+      "dim_supplier",
+      "dim_material"
+    ],
+    "updatedAt": "2026-05-04 09:30",
+    "syncStatus": "成功",
+    "qualityStatus": "通过最近一次质量检查",
+    "permissionStatus": "可查询",
+    "confidence": "高"
+  },
+  "sqlDetail": {
+    "steps": [
+      "匹配指标：采购金额",
+      "确定时间范围：2026-04-01 至 2026-04-30",
+      "选择事实表：dwd_scm_purchase_order_line",
+      "应用过滤条件：订单状态 = 已审核",
+      "聚合方式：SUM(amount_tax_included)"
+    ],
+    "sql": "SELECT SUM(amount_tax_included) AS purchase_amount\nFROM dwd_scm_purchase_order_line\nWHERE po_approved_date BETWEEN '2026-04-01' AND '2026-04-30'\n  AND order_status = 'approved';",
+    "execution": {
+      "duration": "2.3 秒",
+      "scannedRows": 184320,
+      "cacheStatus": "未命中",
+      "indexUsed": "po_approved_date_idx"
+    }
+  },
+  "rowDetail": {
+    "orderNo": "PO2026040101",
+    "supplier": "华东物料供应商 A",
+    "orderDate": "2026-04-02",
+    "amount": "¥1,280,000",
+    "status": "已审核",
+    "sourceTable": "dwd_scm_purchase_order_line"
+  },
+  "confidenceDetail": {
+    "level": "高",
+    "reasons": [
+      "指标口径已在语义层注册",
+      "来源表为 DWD 明细事实表",
+      "来源字段注释完整",
+      "最近一次同步成功",
+      "最近一次数据质量检查通过"
+    ]
+  }
+}
